@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-
 import { HealthController } from './controllers/health.controller.js';
 import { TenantContextMiddleware } from './middleware/tenant-context.middleware.js';
 
