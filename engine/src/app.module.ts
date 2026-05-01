@@ -1,9 +1,16 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { HealthController } from './health.controller.js';
+import { HealthController } from './controllers/health.controller.js';
+import { TenantContextMiddleware } from './middleware/tenant-context.middleware.js';
 
 @Module({
+  providers: [TenantContextMiddleware],
   controllers: [HealthController],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(TenantContextMiddleware).forRoutes('*');
+  }
+}
+
 

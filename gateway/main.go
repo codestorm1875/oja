@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
-	"strings"
+
+	"github.com/codestorm1875/oja/gateway/internal/auth"
+	"github.com/codestorm1875/oja/gateway/internal/proxy"
 )
 
 func main() {
+	directory := auth.NewStaticTenantDirectory()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
-	mux.Handle("/engine/", newEngineProxy())
+	mux.Handle("/engine/", auth.TenantAuthMiddleware(directory, proxy.NewEngineProxy()))
 
 	port := os.Getenv("GATEWAY_PORT")
 	if port == "" {
@@ -33,29 +35,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-func newEngineProxy() http.Handler {
-	engineURL := os.Getenv("ENGINE_URL")
-	if engineURL == "" {
-		engineURL = "http://localhost:3000"
-	}
-
-	target, err := url.Parse(engineURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(target)
-	originalDirector := proxy.Director
-
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/engine")
-		if req.URL.Path == "" {
-			req.URL.Path = "/"
-		}
-	}
-
-	return proxy
-}
-
