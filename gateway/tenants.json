@@ -1,0 +1,12 @@
+[
+  {
+    "id": "tenant_acme",
+    "slug": "acme",
+    "apiKey": "test-key-acme"
+  },
+  {
+    "id": "tenant_beta",
+    "slug": "beta",
+    "apiKey": "test-key-beta"
+  }
+]

@@ -1,9 +1,15 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HealthController } from './controllers/health.controller.js';
 import { TenantContextMiddleware } from './middleware/tenant-context.middleware.js';
+import { PluginRegistryService } from './services/plugin-registry.service.js';
+import { TenantConfigService } from './services/tenant-config.service.js';
 
 @Module({
-  providers: [TenantContextMiddleware],
+  providers: [
+    TenantContextMiddleware,
+    TenantConfigService,
+    PluginRegistryService,
+  ],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
@@ -11,5 +17,4 @@ export class AppModule implements NestModule {
     consumer.apply(TenantContextMiddleware).forRoutes('*');
   }
 }
-
 

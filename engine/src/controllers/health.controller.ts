@@ -1,19 +1,28 @@
 import { Controller, Get, Req } from '@nestjs/common';
-import { getTenantConfig } from '../services/tenant-config.service.js';
+import { PluginRegistryService } from '../services/plugin-registry.service.js';
+import { TenantConfigService } from '../services/tenant-config.service.js';
 
 @Controller()
 export class HealthController {
+  constructor(
+    private readonly tenantConfigService: TenantConfigService,
+    private readonly pluginRegistryService: PluginRegistryService,
+  ) {}
+
   @Get('/healthz')
-  healthz(@Req() req: any): { status: string; tenant: unknown } {
+  healthz(@Req() req: any): { status: string; tenant: unknown; plugins: unknown } {
     const tenantContext = req.tenantContext ?? null;
     const config = tenantContext
-      ? getTenantConfig(tenantContext.id)
+      ? this.tenantConfigService.getTenantConfig(tenantContext.id)
       : null;
+    const plugins = tenantContext
+      ? this.pluginRegistryService.listForTenant(tenantContext.id)
+      : this.pluginRegistryService.listAll();
 
     return {
       status: 'ok',
       tenant: tenantContext ? { ...tenantContext, config } : null,
+      plugins,
     };
   }
 }
-
