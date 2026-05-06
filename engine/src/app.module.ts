@@ -19,6 +19,8 @@ import { PaymentsController } from './plugins/payments/payments.controller.js';
 import { PaymentsService } from './plugins/payments/payments.service.js';
 import { AdminController } from './platform/admin/admin.controller.js';
 import { AdminService } from './platform/admin/admin.service.js';
+import { StorefrontController } from './platform/storefront/storefront.controller.js';
+import { StorefrontService } from './platform/storefront/storefront.service.js';
 import { WebhooksController } from './platform/webhooks/webhooks.controller.js';
 import { WebhooksService } from './platform/webhooks/webhooks.service.js';
 
@@ -36,6 +38,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     DiscountsService,
     PaymentsService,
     AdminService,
+    StorefrontService,
     WebhooksService,
   ],
   controllers: [
@@ -47,6 +50,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     DiscountsController,
     PaymentsController,
     AdminController,
+    StorefrontController,
     WebhooksController],
 })
 export class AppModule implements NestModule {
