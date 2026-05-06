@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+type Identity struct {
+	ID   string `json:"id"`
+	Slug string `json:"slug"`
+}
+
 type TenantLookupService interface {
 	LookupByAPIKey(ctx context.Context, apiKey string) (Identity, bool, error)
 }

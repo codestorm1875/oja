@@ -1,0 +1,29 @@
+[
+  {
+    "id": "tenant_acme",
+    "currency": "USD",
+    "region": "us-east-1",
+    "enabledPlugins": [
+      "catalog",
+      "inventory",
+      "cart",
+      "checkout",
+      "discounts",
+      "payments",
+      "orders"
+    ]
+  },
+  {
+    "id": "tenant_beta",
+    "currency": "EUR",
+    "region": "eu-west-1",
+    "enabledPlugins": [
+      "catalog",
+      "inventory",
+      "cart",
+      "checkout",
+      "payments",
+      "orders"
+    ]
+  }
+]
