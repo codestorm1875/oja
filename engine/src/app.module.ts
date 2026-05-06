@@ -17,6 +17,8 @@ import { DiscountsController } from './plugins/discounts/discounts.controller.js
 import { DiscountsService } from './plugins/discounts/discounts.service.js';
 import { PaymentsController } from './plugins/payments/payments.controller.js';
 import { PaymentsService } from './plugins/payments/payments.service.js';
+import { WebhooksController } from './platform/webhooks/webhooks.controller.js';
+import { WebhooksService } from './platform/webhooks/webhooks.service.js';
 
 @Module({
   providers: [
@@ -31,8 +33,17 @@ import { PaymentsService } from './plugins/payments/payments.service.js';
     InventoryService,
     DiscountsService,
     PaymentsService,
+    WebhooksService,
   ],
-  controllers: [HealthController, CatalogController, CheckoutController, OrdersController, InventoryController, DiscountsController, PaymentsController],
+  controllers: [
+    HealthController, 
+    CatalogController, 
+    CheckoutController, 
+    OrdersController, 
+    InventoryController, 
+    DiscountsController, 
+    PaymentsController, 
+    WebhooksController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
