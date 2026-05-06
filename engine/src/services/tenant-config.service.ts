@@ -13,6 +13,13 @@ type TenantConfigRecord = TenantConfig & {
   id: string;
 };
 
+export type TenantConfigSnapshot = {
+  id: string;
+  currency: string;
+  region: string;
+  enabledPlugins: string[];
+};
+
 const DEFAULT_TENANT_CONFIG: TenantConfig = {
   currency: 'USD',
   region: 'us-east-1',
@@ -42,6 +49,7 @@ function resolveTenantConfigPath(): string {
 @Injectable()
 export class TenantConfigService {
   private readonly tenantConfigs = new Map<string, TenantConfig>();
+  private readonly tenantIds = new Set<string>();
 
   constructor() {
     this.loadTenantConfigs();
@@ -53,12 +61,24 @@ export class TenantConfigService {
     const records = JSON.parse(rawContents) as TenantConfigRecord[];
 
     for (const record of records) {
+      this.tenantIds.add(record.id);
       this.tenantConfigs.set(record.id, {
         currency: record.currency,
         region: record.region,
         enabledPlugins: record.enabledPlugins,
       });
     }
+  }
+
+  listTenantIds(): string[] {
+    return [...this.tenantIds];
+  }
+
+  listTenantConfigs(): TenantConfigSnapshot[] {
+    return this.listTenantIds().map((tenantId) => ({
+      id: tenantId,
+      ...this.getTenantConfig(tenantId),
+    }));
   }
 
   getTenantConfig(tenantId: string): TenantConfig {
