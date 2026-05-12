@@ -35,4 +35,19 @@ export class AdminController {
       recentEvents: this.adminService.snapshot().recentEvents,
     };
   }
+
+  @Get('audit-logs')
+  listAuditLogs(): unknown {
+    return {
+      auditLogs: this.adminService.listAuditLogs(),
+    };
+  }
+
+  @Get('tenants/:tenantId/audit-logs')
+  listTenantAuditLogs(@Param('tenantId') tenantId: string): unknown {
+    return {
+      tenantId,
+      auditLogs: this.adminService.listTenantAuditLogs(tenantId),
+    };
+  }
 }

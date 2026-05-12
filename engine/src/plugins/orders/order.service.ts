@@ -28,10 +28,7 @@ export type OrderSnapshot = {
 export class OrderService {
   private readonly ordersByTenant = new Map<string, OrderSnapshot[]>();
 
-  constructor(private readonly checkoutService: CheckoutService) {
-    const seededOrder = this.createOrder('tenant_acme', 'USD');
-    seededOrder.status = 'processing';
-  }
+  constructor(private readonly checkoutService: CheckoutService) {}
 
   listOrders(tenantId: string): OrderSnapshot[] {
     return [...(this.ordersByTenant.get(tenantId) ?? [])];

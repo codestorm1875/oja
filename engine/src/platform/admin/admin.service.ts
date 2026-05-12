@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AuditLogService } from '../../services/audit-log.service.js';
 import { PluginEventBusService } from '../../services/event-bus.service.js';
 import { PluginRegistryService } from '../../services/plugin-registry.service.js';
 import { TenantConfigService } from '../../services/tenant-config.service.js';
@@ -9,6 +10,7 @@ export class AdminService {
     private readonly tenantConfigService: TenantConfigService,
     private readonly pluginRegistryService: PluginRegistryService,
     private readonly eventBusService: PluginEventBusService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   listTenants(): Array<{ id: string; currency: string; region: string; enabledPlugins: string[] }> {
@@ -31,6 +33,7 @@ export class AdminService {
     tenants: ReturnType<AdminService['listTenants']>;
     plugins: ReturnType<PluginRegistryService['listAll']>;
     recentEvents: ReturnType<PluginEventBusService['snapshot']>['recentEvents'];
+    recentAuditLogs: ReturnType<AuditLogService['listRecent']>;
   } {
     const eventSnapshot = this.eventBusService.snapshot();
 
@@ -38,6 +41,15 @@ export class AdminService {
       tenants: this.listTenants(),
       plugins: this.pluginRegistryService.listAll(),
       recentEvents: eventSnapshot.recentEvents,
+      recentAuditLogs: this.auditLogService.listRecent(),
     };
+  }
+
+  listAuditLogs(): ReturnType<AuditLogService['listRecent']> {
+    return this.auditLogService.listRecent();
+  }
+
+  listTenantAuditLogs(tenantId: string): ReturnType<AuditLogService['listForTenant']> {
+    return this.auditLogService.listForTenant(tenantId);
   }
 }

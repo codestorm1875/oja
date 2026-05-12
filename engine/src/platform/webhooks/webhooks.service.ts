@@ -41,8 +41,14 @@ type RegisterWebhookInput = {
 export class WebhooksService {
   private readonly webhooksByTenant = new Map<string, WebhookRegistration[]>();
   private readonly deliveriesByTenant = new Map<string, WebhookDelivery[]>();
+  private eventBusService: PluginEventBusService | null = null;
 
-  constructor(private readonly eventBusService: PluginEventBusService) {
+  attachEventBus(eventBusService: PluginEventBusService): void {
+    if (this.eventBusService) {
+      return;
+    }
+
+    this.eventBusService = eventBusService;
     this.eventBusService.subscribe('*', (event) => this.handleEvent(event));
   }
 

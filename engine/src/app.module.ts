@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HealthController } from './controllers/health.controller.js';
 import { PluginEventBusService } from './services/event-bus.service.js';
 import { PluginContextService } from './services/plugin-context.service.js';
+import { AuditLogService } from './services/audit-log.service.js';
 import { TenantContextMiddleware } from './middleware/tenant-context.middleware.js';
 import { PluginRegistryService } from './services/plugin-registry.service.js';
 import { TenantConfigService } from './services/tenant-config.service.js';
@@ -31,6 +32,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     PluginRegistryService,
     PluginEventBusService,
     PluginContextService,
+    AuditLogService,
     CatalogService,
     CheckoutService,
     OrderService,
@@ -51,11 +53,11 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     PaymentsController,
     AdminController,
     StorefrontController,
-    WebhooksController],
+    WebhooksController,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(TenantContextMiddleware).forRoutes('*');
   }
 }
-

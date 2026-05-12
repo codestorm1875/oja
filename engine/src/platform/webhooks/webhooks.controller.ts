@@ -8,6 +8,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { AuditLogService } from '../../services/audit-log.service.js';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { WebhooksService, type WebhookFailureMode } from './webhooks.service.js';
 
@@ -27,6 +28,7 @@ export class WebhooksController {
   constructor(
     private readonly webhooksService: WebhooksService,
     private readonly pluginContextService: PluginContextService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   @Get()
@@ -73,6 +75,18 @@ export class WebhooksController {
       eventTypes: body.eventTypes,
       failureMode: body.failureMode,
     });
+    this.auditLogService.record({
+      tenantId: tenantContext.id,
+      action: 'webhook.registered',
+      source: 'platform',
+      actor: 'admin',
+      target: webhook.id,
+      metadata: {
+        url: webhook.url,
+        eventTypes: webhook.eventTypes,
+        failureMode: webhook.failureMode,
+      },
+    });
 
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
@@ -94,6 +108,18 @@ export class WebhooksController {
       payload,
       body.eventType ?? 'webhook.test',
     );
+    this.auditLogService.record({
+      tenantId: tenantContext.id,
+      action: 'webhook.test_delivery.sent',
+      source: 'platform',
+      actor: 'admin',
+      target: webhookId,
+      metadata: {
+        deliveryId: delivery.id,
+        eventType: delivery.eventType,
+        status: delivery.status,
+      },
+    });
 
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
@@ -109,6 +135,13 @@ export class WebhooksController {
     if (!removed) {
       throw new BadRequestException(`Webhook ${webhookId} not found`);
     }
+    this.auditLogService.record({
+      tenantId: tenantContext.id,
+      action: 'webhook.removed',
+      source: 'platform',
+      actor: 'admin',
+      target: webhookId,
+    });
 
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
