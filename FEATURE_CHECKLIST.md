@@ -9,7 +9,8 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] NestJS engine application shell.
 - [x] Go gateway application shell.
 - [x] Go worker application shell.
-- [ ] Production database schema, migrations, and seed data.
+- [x] Initial database schema, migration, and dev seed data.
+- [ ] Production migration runner and rollback workflow.
 - [ ] Durable backend persistence across engine modules.
 - [ ] End-to-end integration test suite.
 - [ ] Load test scripts.
@@ -239,31 +240,33 @@ This document tracks the planned feature set from `build.md` against the current
 
 ## Persistence And Data Model
 
-- [ ] PostgreSQL schema.
-- [ ] Row-level security.
-- [ ] `tenant_id` on every tenant-owned table.
+- [x] PostgreSQL schema.
+- [x] Row-level security.
+- [x] `tenant_id` on every tenant-owned table.
 - [ ] Tenant session setting for RLS.
-- [ ] Stores table.
-- [ ] Products table.
-- [ ] Variants table.
-- [ ] Categories tables.
-- [ ] Inventory levels table.
-- [ ] Orders table.
-- [ ] Order items table.
-- [ ] Payments table.
-- [ ] Fulfillments table.
-- [ ] Carts table.
-- [ ] Cart items table.
-- [ ] Discounts table.
-- [ ] Discount rules table.
-- [ ] Discount usages table.
-- [ ] Webhooks table.
-- [ ] Webhook deliveries table.
-- [ ] API keys table.
-- [ ] Plugins table.
-- [ ] Plugin configs table.
-- [ ] Audit logs table.
-- [ ] Critical indexes from `build.md`.
+- [x] Stores table.
+- [x] Products table.
+- [x] Variants table.
+- [x] Categories tables.
+- [x] Inventory levels table.
+- [x] Orders table.
+- [x] Order items table.
+- [x] Payments table.
+- [x] Fulfillments table.
+- [x] Carts table.
+- [x] Cart items table.
+- [x] Discounts table.
+- [x] Discount rules table.
+- [x] Discount usages table.
+- [x] Webhooks table.
+- [x] Webhook deliveries table.
+- [x] API keys table.
+- [x] Plugins table.
+- [x] Plugin configs table.
+- [x] Audit logs table.
+- [x] Outbox events table.
+- [x] Email deliveries table.
+- [x] Critical indexes from `build.md`.
 
 ## Observability And Operations
 
