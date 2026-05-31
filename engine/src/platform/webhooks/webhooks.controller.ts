@@ -65,7 +65,7 @@ export class WebhooksController {
   }
 
   @Post()
-  registerWebhook(@Req() req: any, @Body() body: RegisterWebhookBody): unknown {
+  registerWebhook(@Req() req: any, @Body() body: RegisterWebhookBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const url = String(body.url ?? '').trim();
 
@@ -102,7 +102,7 @@ export class WebhooksController {
   testWebhook(
     @Req() req: any,
     @Param('webhookId') webhookId: string,
-    @Body() body: TestWebhookBody,
+    @Body() body: TestWebhookBody = {},
   ): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const payload = body.payload ?? { scope: 'platform', source: 'webhooks-controller' };

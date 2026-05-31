@@ -63,7 +63,7 @@ export class PaymentsController {
   }
 
   @Post('intents')
-  createIntent(@Req() req: any, @Body() body: CreatePaymentIntentBody): unknown {
+  createIntent(@Req() req: any, @Body() body: CreatePaymentIntentBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const amount = Number(body.amount ?? 0);
     const currency = String(body.currency ?? 'USD');
