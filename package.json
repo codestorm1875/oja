@@ -7,6 +7,9 @@
   "scripts": {
     "dev:infra": "docker compose -f infra/docker-compose.yml up -d",
     "down:infra": "docker compose -f infra/docker-compose.yml down",
+    "db:migrate": "bash scripts/db-migrate.sh",
+    "db:seed": "bash scripts/db-seed.sh",
+    "db:setup": "npm run db:migrate && npm run db:seed",
     "dev:engine": "pnpm --filter @oja/engine run start:dev",
     "build:engine": "pnpm --filter @oja/engine run build",
     "typecheck:engine": "pnpm --filter @oja/engine run typecheck",

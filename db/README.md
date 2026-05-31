@@ -14,17 +14,33 @@ Schema, migrations, and seed data live here.
 
 ## Local Usage
 
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
 Start local infrastructure first:
 
 ```bash
 npm run dev:infra
 ```
 
-Apply the migration and dev seed with `psql`:
+Apply migrations and dev seed:
 
 ```bash
-psql postgresql://oja:oja@localhost:5432/oja -f db/migrations/001_initial_schema.sql
-psql postgresql://oja:oja@localhost:5432/oja -f db/seeds/dev.sql
+npm run db:setup
+```
+
+The scripts load `DATABASE_URL` from `.env` by default. You can override the env file with `ENV_FILE=.env.production npm run db:migrate`.
+
+The local `.env` and real `.env.production` files are ignored by git. Commit only `.env.example` and `.env.production.example`.
+
+You can also run them separately:
+
+```bash
+npm run db:migrate
+npm run db:seed
 ```
 
 Tenant-owned tables have row-level security policies that expect the app to set `app.tenant_id` for each request transaction:

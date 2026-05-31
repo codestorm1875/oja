@@ -10,6 +10,8 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Go gateway application shell.
 - [x] Go worker application shell.
 - [x] Initial database schema, migration, and dev seed data.
+- [x] Local migration and seed scripts.
+- [x] Environment templates with ignored local and production secret files.
 - [ ] Production migration runner and rollback workflow.
 - [ ] Durable backend persistence across engine modules.
 - [ ] End-to-end integration test suite.
