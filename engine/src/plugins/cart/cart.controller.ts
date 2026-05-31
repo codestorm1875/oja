@@ -51,14 +51,21 @@ export class CartController {
   createCart(@Req() req: any, @Body() body: CreateCartBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenantContext.id);
+    const customerId = this.normalizeOptionalString(body.customerId);
+    const sessionId = this.normalizeOptionalString(body.sessionId);
+
+    if (!customerId && !sessionId) {
+      throw new BadRequestException('customerId or sessionId is required');
+    }
+
     const items = this.parseCartItems(body.items);
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
     const cart = this.runCartMutation(() =>
       this.cartService.createCart({
         tenantId: tenantContext.id,
         currency: tenantConfig.currency,
-        customerId: body.customerId,
-        sessionId: body.sessionId,
+        customerId,
+        sessionId,
         items,
       }),
     );
@@ -230,5 +237,11 @@ export class CartController {
         quantity,
       };
     });
+  }
+
+  private normalizeOptionalString(value?: string): string | undefined {
+    const normalized = String(value ?? '').trim();
+
+    return normalized || undefined;
   }
 }

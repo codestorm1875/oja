@@ -28,6 +28,10 @@ export class CheckoutController {
       throw new BadRequestException(`Cart ${cartId} not found`);
     }
 
+    if (cart && cart.items.length === 0) {
+      throw new BadRequestException(`Cart ${cart.id} has no items`);
+    }
+
     const quote = cart
       ? this.checkoutService.createQuoteFromItems(
           tenantContext.id,

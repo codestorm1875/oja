@@ -59,9 +59,20 @@ export class CartService {
       throw new Error('cart must include at least one item');
     }
 
-    const items = input.items.map((item) =>
-      this.createCartItem(input.tenantId, item.productId, item.quantity),
+    const existingCart = this.findActiveCartForOwner(
+      input.tenantId,
+      input.customerId,
+      input.sessionId,
     );
+    if (existingCart) {
+      for (const item of input.items) {
+        this.addItemToCart(existingCart, item.productId, item.quantity);
+      }
+
+      this.touchCart(existingCart);
+      return this.cloneCart(existingCart);
+    }
+
     const now = new Date();
     const cart: Cart = {
       id: `cart_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
@@ -70,11 +81,15 @@ export class CartService {
       currency: input.currency,
       customerId: input.customerId,
       sessionId: input.sessionId,
-      items,
+      items: [],
       expiresAt: new Date(now.getTime() + CART_TTL_MS).toISOString(),
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
+
+    for (const item of input.items) {
+      this.addItemToCart(cart, item.productId, item.quantity);
+    }
 
     this.storeCart(cart);
     return this.cloneCart(cart);
@@ -95,20 +110,7 @@ export class CartService {
     }
 
     const cart = this.getRequiredCart(input.tenantId, input.cartId);
-    const nextItem = this.createCartItem(
-      input.tenantId,
-      input.productId,
-      input.quantity,
-    );
-
-    const existingItem = cart.items.find((item) => item.productId === input.productId);
-    if (existingItem) {
-      existingItem.quantity += input.quantity;
-      existingItem.lineTotal = existingItem.unitPrice * existingItem.quantity;
-    } else {
-      cart.items.push(nextItem);
-    }
-
+    this.addItemToCart(cart, input.productId, input.quantity);
     this.touchCart(cart);
     return this.cloneCart(cart);
   }
@@ -163,6 +165,26 @@ export class CartService {
     return cart;
   }
 
+  private findActiveCartForOwner(
+    tenantId: string,
+    customerId?: string,
+    sessionId?: string,
+  ): Cart | null {
+    return (
+      this.getTenantCarts(tenantId).find((cart) => {
+        if (cart.status !== 'active') {
+          return false;
+        }
+
+        if (customerId && cart.customerId === customerId) {
+          return true;
+        }
+
+        return Boolean(sessionId && cart.sessionId === sessionId);
+      }) ?? null
+    );
+  }
+
   private storeCart(cart: Cart): void {
     const carts = this.cartsByTenant.get(cart.tenantId) ?? [];
     this.cartsByTenant.set(cart.tenantId, [cart, ...carts]);
@@ -191,6 +213,19 @@ export class CartService {
       currency: product.currency,
       lineTotal: product.price * quantity,
     };
+  }
+
+  private addItemToCart(cart: Cart, productId: string, quantity: number): void {
+    const nextItem = this.createCartItem(cart.tenantId, productId, quantity);
+    const existingItem = cart.items.find((item) => item.productId === productId);
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      existingItem.lineTotal = existingItem.unitPrice * existingItem.quantity;
+      return;
+    }
+
+    cart.items.push(nextItem);
   }
 
   private touchCart(cart: Cart): void {

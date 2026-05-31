@@ -61,11 +61,12 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Cart plugin manifest.
 - [x] In-memory cart service.
 - [x] Cart controller.
-- [ ] Guest carts.
+- [x] Session-owned carts.
 - [ ] Persistent customer carts.
 - [ ] Redis-backed cart sessions.
 - [ ] Cart TTL.
 - [x] Cart item add/update/remove.
+- [x] Merge repeated cart creation into existing active owner cart.
 - [ ] Cart merge on login.
 - [ ] Cart validation against catalog and inventory.
 

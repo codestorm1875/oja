@@ -22,6 +22,7 @@
 - Event bus and sandboxed plugin context layers are in place.
 - First real catalog plugin slice is in place with tenant-aware product listing.
 - Cart plugin slice is in place with in-memory cart creation and item mutations.
+- Cart creation now requires a session or customer owner and merges repeated creates into the existing active cart.
 - Checkout plugin slice is in place with tenant-aware quoting and checkout event emission.
 - Checkout quotes can now be generated from a specific cart ID.
 - Order management slice is in place with tenant-aware order creation and lookup.
