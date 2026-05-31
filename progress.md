@@ -21,7 +21,9 @@
 - Plugin registry now validates dependency graphs and resolves transitive plugin requirements.
 - Event bus and sandboxed plugin context layers are in place.
 - First real catalog plugin slice is in place with tenant-aware product listing.
+- Cart plugin slice is in place with in-memory cart creation and item mutations.
 - Checkout plugin slice is in place with tenant-aware quoting and checkout event emission.
+- Checkout quotes can now be generated from a specific cart ID.
 - Order management slice is in place with tenant-aware order creation and lookup.
 - Inventory slice is in place with tenant-aware stock tracking and reservations.
 - Discount engine slice is in place with tenant-aware discount evaluation.
@@ -52,7 +54,7 @@
 
 ## Next
 
-1. Add cart/session storage so checkout has a real input model.
+1. Add Redis-backed cart sessions and cart persistence.
 2. Expand checkout from quote scaffolding into the full pipeline in `build.md`.
 3. Add provider adapter interfaces for payments and email before wiring real vendors.
 4. Add webhook delivery signatures, retries, and dead-letter persistence.
@@ -69,7 +71,7 @@
 
 ### Phase 2 - Core Plugins
 
-- Cart and sessions.
+- Redis-backed cart sessions and durable cart persistence.
 - Replace in-memory plugin state with PostgreSQL and Redis-backed stores.
 - Expand checkout from quote/event scaffolding into the full pipeline in `build.md`.
 - Product CRUD, variants, categories, attributes, price tiers, images, and soft deletes.

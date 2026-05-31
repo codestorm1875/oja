@@ -8,6 +8,8 @@ import { PluginRegistryService } from './services/plugin-registry.service.js';
 import { TenantConfigService } from './services/tenant-config.service.js';
 import { CatalogController } from './plugins/catalog/catalog.controller.js';
 import { CatalogService } from './plugins/catalog/catalog.service.js';
+import { CartController } from './plugins/cart/cart.controller.js';
+import { CartService } from './plugins/cart/cart.service.js';
 import { CheckoutController } from './plugins/checkout/checkout.controller.js';
 import { CheckoutService } from './plugins/checkout/checkout.service.js';
 import { OrdersController } from './plugins/orders/orders.controller.js';
@@ -34,6 +36,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     PluginContextService,
     AuditLogService,
     CatalogService,
+    CartService,
     CheckoutService,
     OrderService,
     InventoryService,
@@ -46,6 +49,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
   controllers: [
     HealthController,
     CatalogController,
+    CartController,
     CheckoutController,
     OrdersController,
     InventoryController,

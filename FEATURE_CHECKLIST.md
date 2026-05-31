@@ -59,13 +59,13 @@ This document tracks the planned feature set from `build.md` against the current
 ## Cart And Sessions
 
 - [x] Cart plugin manifest.
-- [ ] Cart service.
-- [ ] Cart controller.
+- [x] In-memory cart service.
+- [x] Cart controller.
 - [ ] Guest carts.
 - [ ] Persistent customer carts.
 - [ ] Redis-backed cart sessions.
 - [ ] Cart TTL.
-- [ ] Cart item add/update/remove.
+- [x] Cart item add/update/remove.
 - [ ] Cart merge on login.
 - [ ] Cart validation against catalog and inventory.
 
@@ -73,6 +73,7 @@ This document tracks the planned feature set from `build.md` against the current
 
 - [x] Tenant-aware quote endpoint.
 - [x] Checkout quote event emission.
+- [x] Checkout quote from cart ID.
 - [ ] Full checkout pipeline.
 - [ ] Cart validation step.
 - [ ] Inventory reservation step.

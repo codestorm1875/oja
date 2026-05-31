@@ -10,12 +10,20 @@ export type CheckoutLineItem = {
 
 export type CheckoutQuote = {
   tenantId: string;
+  cartId?: string;
   subtotal: number;
   discount: number;
   tax: number;
   total: number;
   currency: string;
   items: CheckoutLineItem[];
+};
+
+export type CheckoutQuoteInputItem = {
+  productId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
 };
 
 type CheckoutCatalogEntry = {
@@ -78,7 +86,24 @@ export class CheckoutService {
       };
     });
 
-    const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    return this.createQuoteFromItems(tenantId, currency, items);
+  }
+
+  createQuoteFromItems(
+    tenantId: string,
+    currency: string,
+    items: CheckoutQuoteInputItem[],
+    cartId?: string,
+  ): CheckoutQuote {
+    const quoteItems = items.map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      lineTotal: item.unitPrice * item.quantity,
+    }));
+
+    const subtotal = quoteItems.reduce((sum, item) => sum + item.lineTotal, 0);
     const discount = Math.floor(subtotal * 0.1);
     const taxableAmount = subtotal - discount;
     const tax = Math.floor(taxableAmount * 0.075);
@@ -86,12 +111,13 @@ export class CheckoutService {
 
     return {
       tenantId,
+      cartId,
       subtotal,
       discount,
       tax,
       total,
       currency,
-      items,
+      items: quoteItems,
     };
   }
 }
