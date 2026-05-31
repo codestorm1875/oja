@@ -1,0 +1,318 @@
+# Oja Feature Checklist
+
+This document tracks the planned feature set from `build.md` against the current implementation. A checked item means the feature exists in the repo in a usable scaffold/prototype form. Items that still need production hardening stay unchecked.
+
+## Current Status
+
+- [x] Root workspace scaffold for Go gateway, NestJS engine, Go worker, SDK, DB, infra, and tests.
+- [x] Local PostgreSQL and Redis Docker Compose config.
+- [x] NestJS engine application shell.
+- [x] Go gateway application shell.
+- [x] Go worker application shell.
+- [ ] Production database schema, migrations, and seed data.
+- [ ] Durable backend persistence across engine modules.
+- [ ] End-to-end integration test suite.
+- [ ] Load test scripts.
+
+## Core Engine
+
+- [x] Health endpoint.
+- [x] Tenant context middleware in the engine.
+- [x] Tenant config lookup from `engine/tenants.json`.
+- [x] Gateway API-key tenant resolution from `gateway/tenants.json`.
+- [x] Gateway tenant context propagation to the engine.
+- [x] Plugin registry with manifest-bearing plugin definitions.
+- [x] Plugin dependency validation.
+- [x] Transitive plugin dependency resolution.
+- [x] In-process event bus.
+- [x] Sandboxed plugin context with tenant data and event emission.
+- [x] Recent event snapshot support.
+- [ ] Tenant persistence in PostgreSQL.
+- [ ] Hashed API keys.
+- [ ] API key rotation and revocation.
+- [ ] Per-tenant plugin config persistence.
+- [ ] Plugin config schema declaration and validation.
+- [ ] Critical vs non-critical plugin failure policy.
+- [ ] Real plugin lifecycle hooks.
+
+## Catalog Plugin
+
+- [x] Tenant-aware product listing.
+- [x] Tenant-aware product lookup.
+- [ ] Product CRUD.
+- [ ] Variants.
+- [ ] Categories.
+- [ ] Attributes.
+- [ ] Price tiers.
+- [ ] Product images.
+- [ ] Soft deletes.
+- [ ] Search indexing.
+- [ ] PostgreSQL-backed catalog store.
+
+## Cart And Sessions
+
+- [x] Cart plugin manifest.
+- [ ] Cart service.
+- [ ] Cart controller.
+- [ ] Guest carts.
+- [ ] Persistent customer carts.
+- [ ] Redis-backed cart sessions.
+- [ ] Cart TTL.
+- [ ] Cart item add/update/remove.
+- [ ] Cart merge on login.
+- [ ] Cart validation against catalog and inventory.
+
+## Checkout Engine
+
+- [x] Tenant-aware quote endpoint.
+- [x] Checkout quote event emission.
+- [ ] Full checkout pipeline.
+- [ ] Cart validation step.
+- [ ] Inventory reservation step.
+- [ ] Discount evaluation step wired into checkout.
+- [ ] Tax calculation step.
+- [ ] Payment initiation step.
+- [ ] Order creation on successful payment.
+- [ ] Reservation release on failure.
+- [ ] Plugin hook execution during checkout.
+- [ ] Idempotent checkout attempts.
+- [ ] Checkout error recovery.
+
+## Orders
+
+- [x] Tenant-aware order creation scaffold.
+- [x] Tenant-aware order listing.
+- [x] Tenant-aware order lookup.
+- [x] Order price snapshot shape.
+- [ ] PostgreSQL-backed orders.
+- [ ] Order lifecycle FSM: pending, confirmed, processing, fulfilled, returned.
+- [ ] Order status transitions with validation.
+- [ ] Order items table and immutable purchase snapshots.
+- [ ] Fulfillments.
+- [ ] Returns.
+- [ ] Order event publishing.
+
+## Inventory
+
+- [x] Tenant-aware stock listing.
+- [x] In-memory stock reservation.
+- [x] In-memory stock release.
+- [x] Low-stock item lookup.
+- [ ] PostgreSQL-backed inventory levels.
+- [ ] Multi-warehouse inventory.
+- [ ] Reservation TTL.
+- [ ] Reservation expiry worker.
+- [ ] Optimistic locking or equivalent concurrency control.
+- [ ] Low-stock alerts.
+- [ ] Inventory event publishing.
+
+## Discounts
+
+- [x] Tenant-aware discount rule listing.
+- [x] Percentage discounts.
+- [x] Fixed amount discounts.
+- [x] Coupon-style discounts.
+- [x] Discount cap at subtotal.
+- [ ] PostgreSQL-backed discounts.
+- [ ] BOGO rules.
+- [ ] Rule conditions.
+- [ ] Expiry windows.
+- [ ] Usage limits.
+- [ ] Per-customer usage tracking.
+- [ ] Discount usage persistence.
+- [ ] Checkout integration.
+
+## Payments And Providers
+
+- [x] Payment plugin manifest.
+- [x] Payment provider type abstraction for Stripe, Paystack, and Flutterwave.
+- [x] Tenant-aware fake payment intents.
+- [x] Provider currency checks.
+- [x] Intent authorize/capture/refund state changes.
+- [ ] Provider adapter interface.
+- [ ] Stripe adapter.
+- [ ] Paystack adapter.
+- [ ] Flutterwave adapter.
+- [ ] Tenant payment config persistence.
+- [ ] Secret management for provider credentials.
+- [ ] Provider idempotency keys.
+- [ ] Provider webhook verification.
+- [ ] Payment state machine guards.
+- [ ] Payment persistence.
+- [ ] Payment failure handling.
+- [ ] Refund persistence and reconciliation.
+
+## Webhooks
+
+- [x] Webhook registration scaffold.
+- [x] Tenant-aware webhook listing.
+- [x] Tenant-aware webhook removal.
+- [x] Event type filtering.
+- [x] In-process event fanout.
+- [x] Simulated webhook delivery records.
+- [x] Test delivery endpoint behavior.
+- [ ] Real HTTP webhook delivery.
+- [ ] Webhook signing.
+- [ ] Retry scheduling with exponential backoff.
+- [ ] Dead-letter queue.
+- [ ] Durable webhook registration persistence.
+- [ ] Durable delivery persistence.
+- [ ] Worker-backed delivery processing.
+- [ ] Webhook delivery metrics.
+
+## Email And Notifications
+
+- [ ] Notification module or plugin.
+- [ ] Email provider adapter interface.
+- [ ] Primary email provider adapter.
+- [ ] SMTP fallback adapter.
+- [ ] Transactional email templates.
+- [ ] Tenant-specific template overrides.
+- [ ] Email job queue.
+- [ ] Email delivery persistence.
+- [ ] Email retry and failure tracking.
+- [ ] Order confirmation emails.
+- [ ] Payment failure emails.
+- [ ] Inventory low-stock emails.
+- [ ] Webhook failure emails.
+
+## Platform APIs
+
+- [x] Admin API snapshot.
+- [x] Admin tenant listing.
+- [x] Admin tenant detail.
+- [x] Admin audit log listing.
+- [x] Storefront overview endpoint.
+- [x] Storefront product listing.
+- [x] Storefront product lookup.
+- [x] OpenAPI/Swagger setup.
+- [ ] Admin authentication and authorization.
+- [ ] Admin mutation endpoints.
+- [ ] Store management endpoints.
+- [ ] Public/private route separation.
+- [ ] SDK generation from OpenAPI.
+- [ ] Published TypeScript SDK.
+- [ ] Optional GraphQL storefront API.
+
+## Audit Logs
+
+- [x] In-memory audit log service.
+- [x] Plugin event audit logging.
+- [x] Platform mutation audit logging scaffold.
+- [x] Admin audit log access.
+- [ ] PostgreSQL-backed audit logs.
+- [ ] Actor identity model.
+- [ ] Mutation diffs.
+- [ ] Audit log filtering and pagination.
+- [ ] Audit retention policy.
+
+## Gateway
+
+- [x] `/healthz` endpoint.
+- [x] `/engine/*` reverse proxy.
+- [x] API-key auth middleware.
+- [x] Tenant header injection.
+- [x] Redis-backed rate limiting.
+- [x] Tenant/path scoped rate limit keys.
+- [x] Rate limit response headers.
+- [x] Gateway package split into auth, proxy, and ratelimit internals.
+- [ ] Hashed API key lookup.
+- [ ] PostgreSQL-backed tenant lookup.
+- [ ] Request ID injection.
+- [ ] CORS policy.
+- [ ] Structured gateway logging.
+- [ ] Gateway metrics.
+- [ ] Gateway auth tests.
+- [ ] Gateway proxy tests.
+
+## Worker And Queues
+
+- [x] Worker binary scaffold.
+- [ ] Queue technology decision finalized.
+- [ ] Webhook delivery worker.
+- [ ] Email worker.
+- [ ] Inventory reservation expiry worker.
+- [ ] Retry worker.
+- [ ] Dead-letter processing.
+- [ ] Queue depth metrics.
+- [ ] Graceful shutdown.
+
+## Persistence And Data Model
+
+- [ ] PostgreSQL schema.
+- [ ] Row-level security.
+- [ ] `tenant_id` on every tenant-owned table.
+- [ ] Tenant session setting for RLS.
+- [ ] Stores table.
+- [ ] Products table.
+- [ ] Variants table.
+- [ ] Categories tables.
+- [ ] Inventory levels table.
+- [ ] Orders table.
+- [ ] Order items table.
+- [ ] Payments table.
+- [ ] Fulfillments table.
+- [ ] Carts table.
+- [ ] Cart items table.
+- [ ] Discounts table.
+- [ ] Discount rules table.
+- [ ] Discount usages table.
+- [ ] Webhooks table.
+- [ ] Webhook deliveries table.
+- [ ] API keys table.
+- [ ] Plugins table.
+- [ ] Plugin configs table.
+- [ ] Audit logs table.
+- [ ] Critical indexes from `build.md`.
+
+## Observability And Operations
+
+- [ ] Prometheus metrics endpoint.
+- [ ] Request latency metrics.
+- [ ] Plugin hook duration metrics.
+- [ ] Queue depth metrics.
+- [ ] OpenTelemetry tracing.
+- [ ] Distributed traces across gateway, engine, and workers.
+- [ ] Structured JSON logging.
+- [ ] Trace IDs.
+- [ ] Tenant context in logs.
+- [ ] Cache warming.
+- [ ] Runtime health checks for PostgreSQL and Redis.
+- [ ] Graceful shutdown in engine.
+- [ ] Graceful shutdown in gateway.
+- [ ] Deployment configuration.
+
+## Testing
+
+- [x] Gateway rate limit unit tests.
+- [x] Engine TypeScript typecheck passes through local `tsc`.
+- [x] Go package tests pass with `GOCACHE=/tmp/oja-go-build`.
+- [ ] Engine unit tests.
+- [ ] Plugin service tests.
+- [ ] Checkout pipeline tests.
+- [ ] Payment provider contract tests.
+- [ ] Webhook delivery tests.
+- [ ] Email delivery tests.
+- [ ] Database integration tests.
+- [ ] Gateway auth tests.
+- [ ] End-to-end smoke test scripts.
+- [ ] k6 load tests.
+
+## Documentation
+
+- [x] Architecture and engineering playbook in `build.md`.
+- [x] Progress tracker in `progress.md`.
+- [x] Root README scaffold.
+- [x] Infra README scaffold.
+- [x] DB README scaffold.
+- [x] SDK README scaffold.
+- [x] Integration tests README scaffold.
+- [x] Load tests README scaffold.
+- [x] Feature checklist.
+- [ ] Updated progress numbers based on production readiness.
+- [ ] API usage examples.
+- [ ] Local development guide.
+- [ ] Provider setup guide.
+- [ ] Webhook signing guide.
+- [ ] Email setup guide.
+- [ ] Database migration guide.

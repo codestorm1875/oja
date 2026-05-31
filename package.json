@@ -7,10 +7,19 @@
   "scripts": {
     "dev:infra": "docker compose -f infra/docker-compose.yml up -d",
     "down:infra": "docker compose -f infra/docker-compose.yml down",
-    "dev:engine": "npm --workspace engine run start:dev",
-    "build:engine": "npm --workspace engine run build",
-    "typecheck:engine": "npm --workspace engine run typecheck",
+    "dev:engine": "pnpm --filter @oja/engine run start:dev",
+    "build:engine": "pnpm --filter @oja/engine run build",
+    "typecheck:engine": "pnpm --filter @oja/engine run typecheck",
     "dev:gateway": "go run ./gateway",
     "dev:worker": "go run ./worker"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "esbuild"
+    ],
+    "ignoredBuiltDependencies": [
+      "@scarf/scarf"
+    ]
   }
 }
