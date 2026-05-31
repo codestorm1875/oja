@@ -13,12 +13,14 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.1.19",
     "@nestjs/swagger": "^11.4.2",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
+    "@types/pg": "^8.20.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

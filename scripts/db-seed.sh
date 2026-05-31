@@ -24,7 +24,7 @@ if [ ! -f "$SEED_FILE" ]; then
 fi
 
 if ! pg_isready -d "$DATABASE_URL" >/dev/null 2>&1; then
-  echo "database is not reachable; start infra with npm run dev:infra or set DATABASE_URL" >&2
+  echo "database is not reachable; start infra with pnpm run dev:infra or set DATABASE_URL" >&2
   exit 1
 fi
 

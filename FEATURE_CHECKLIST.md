@@ -13,6 +13,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Local migration and seed scripts.
 - [x] Environment templates with ignored local and production secret files.
 - [x] Gateway-safe PostgreSQL API-key lookup function.
+- [x] Engine-safe PostgreSQL tenant/plugin config lookup function.
 - [ ] Production migration runner and rollback workflow.
 - [ ] Durable backend persistence across engine modules.
 - [ ] End-to-end integration test suite.
@@ -23,6 +24,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Health endpoint.
 - [x] Tenant context middleware in the engine.
 - [x] Tenant config lookup from `engine/tenants.json`.
+- [x] Tenant/plugin config lookup from PostgreSQL when `DATABASE_URL` is set.
 - [x] Gateway API-key tenant resolution from `gateway/tenants.json`.
 - [x] Gateway PostgreSQL tenant lookup with hashed API-key verification.
 - [x] Gateway tenant context propagation to the engine.
@@ -33,7 +35,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Sandboxed plugin context with tenant data and event emission.
 - [x] Recent event snapshot support.
 - [x] Hashed API-key verification in the gateway.
-- [ ] Engine tenant config persistence in PostgreSQL.
+- [x] Engine tenant config persistence in PostgreSQL.
 - [ ] API key rotation and revocation.
 - [ ] Per-tenant plugin config persistence.
 - [ ] Plugin config schema declaration and validation.

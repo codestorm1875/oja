@@ -58,7 +58,7 @@ DATABASE_NAME="$(database_name_from_url "$DATABASE_URL")"
 MAINTENANCE_DATABASE_URL="$(maintenance_url_from_database_url "$DATABASE_URL")"
 
 if ! pg_isready -d "$MAINTENANCE_DATABASE_URL" >/dev/null 2>&1; then
-  echo "database server is not reachable; start infra with npm run dev:infra or set DATABASE_URL" >&2
+  echo "database server is not reachable; start infra with pnpm run dev:infra or set DATABASE_URL" >&2
   exit 1
 fi
 

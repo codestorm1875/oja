@@ -7,6 +7,7 @@ import { AppModule } from './app.module.js';
 import { AuditLogService } from './services/audit-log.service.js';
 import { PluginEventBusService } from './services/event-bus.service.js';
 import { WebhooksService } from './platform/webhooks/webhooks.service.js';
+import { loadEnvFile } from './utils/load-env.js';
 
 function setupOpenAPI(app: Awaited<ReturnType<typeof NestFactory.create>>): void {
   const config = new DocumentBuilder()
@@ -30,6 +31,8 @@ function setupOpenAPI(app: Awaited<ReturnType<typeof NestFactory.create>>): void
 }
 
 async function bootstrap(): Promise<void> {
+  loadEnvFile(process.env.ENV_FILE ?? '.env');
+
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'warn', 'error'],
   });

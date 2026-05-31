@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { existsSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
+import pg from 'pg';
 
 export type TenantConfig = {
   currency: string;
@@ -11,6 +12,13 @@ export type TenantConfig = {
 
 type TenantConfigRecord = TenantConfig & {
   id: string;
+};
+
+type TenantConfigRow = {
+  id: string;
+  currency: string;
+  region: string;
+  enabled_plugins: string[];
 };
 
 export type TenantConfigSnapshot = {
@@ -47,15 +55,25 @@ function resolveTenantConfigPath(): string {
 }
 
 @Injectable()
-export class TenantConfigService {
+export class TenantConfigService implements OnModuleInit {
   private readonly tenantConfigs = new Map<string, TenantConfig>();
   private readonly tenantIds = new Set<string>();
 
   constructor() {
-    this.loadTenantConfigs();
+    if (!process.env.DATABASE_URL) {
+      this.loadTenantConfigsFromFile();
+    }
   }
 
-  private loadTenantConfigs(): void {
+  async onModuleInit(): Promise<void> {
+    if (!process.env.DATABASE_URL) {
+      return;
+    }
+
+    await this.loadTenantConfigsFromDatabase(process.env.DATABASE_URL);
+  }
+
+  private loadTenantConfigsFromFile(): void {
     const configPath = resolveTenantConfigPath();
     const rawContents = readFileSync(configPath, 'utf8');
     const records = JSON.parse(rawContents) as TenantConfigRecord[];
@@ -67,6 +85,39 @@ export class TenantConfigService {
         region: record.region,
         enabledPlugins: record.enabledPlugins,
       });
+    }
+  }
+
+  private async loadTenantConfigsFromDatabase(databaseUrl: string): Promise<void> {
+    const client = new pg.Client({
+      connectionString: databaseUrl,
+    });
+
+    await client.connect();
+
+    try {
+      const result = await client.query<TenantConfigRow>(`
+        SELECT
+          id::TEXT AS id,
+          currency,
+          region,
+          enabled_plugins
+        FROM list_engine_tenant_configs();
+      `);
+
+      this.tenantIds.clear();
+      this.tenantConfigs.clear();
+
+      for (const row of result.rows) {
+        this.tenantIds.add(row.id);
+        this.tenantConfigs.set(row.id, {
+          currency: row.currency,
+          region: row.region,
+          enabledPlugins: row.enabled_plugins,
+        });
+      }
+    } finally {
+      await client.end();
     }
   }
 
