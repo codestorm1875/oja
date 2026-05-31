@@ -33,6 +33,7 @@ npm run db:setup
 ```
 
 The scripts load `DATABASE_URL` from `.env` by default. You can override the env file with `ENV_FILE=.env.production npm run db:migrate`.
+`db:migrate` connects through the maintenance `postgres` database first and creates the target database from `DATABASE_URL` when it does not exist.
 
 The local `.env` and real `.env.production` files are ignored by git. Commit only `.env.example` and `.env.production.example`.
 
