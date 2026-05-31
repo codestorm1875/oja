@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AuditLogService } from '../../services/audit-log.service.js';
 import { PluginEventBusService } from '../../services/event-bus.service.js';
 import { PluginRegistryService } from '../../services/plugin-registry.service.js';
@@ -7,9 +7,13 @@ import { TenantConfigService } from '../../services/tenant-config.service.js';
 @Injectable()
 export class AdminService {
   constructor(
+    @Inject(TenantConfigService)
     private readonly tenantConfigService: TenantConfigService,
+    @Inject(PluginRegistryService)
     private readonly pluginRegistryService: PluginRegistryService,
+    @Inject(PluginEventBusService)
     private readonly eventBusService: PluginEventBusService,
+    @Inject(AuditLogService)
     private readonly auditLogService: AuditLogService,
   ) {}
 

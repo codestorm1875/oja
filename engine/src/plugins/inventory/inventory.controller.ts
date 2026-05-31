@@ -1,11 +1,13 @@
-import { BadRequestException, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Inject, Param, Post, Query, Req } from '@nestjs/common';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { InventoryService } from './inventory.service.js';
 
 @Controller('inventory')
 export class InventoryController {
   constructor(
+    @Inject(InventoryService)
     private readonly inventoryService: InventoryService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
   ) {}
 

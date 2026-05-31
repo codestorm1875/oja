@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Inject, Req } from '@nestjs/common';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { TenantConfigService } from '../../services/tenant-config.service.js';
 import { CheckoutService } from './checkout.service.js';
@@ -6,8 +6,11 @@ import { CheckoutService } from './checkout.service.js';
 @Controller('checkout')
 export class CheckoutController {
   constructor(
+    @Inject(CheckoutService)
     private readonly checkoutService: CheckoutService,
+    @Inject(TenantConfigService)
     private readonly tenantConfigService: TenantConfigService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
   ) {}
 

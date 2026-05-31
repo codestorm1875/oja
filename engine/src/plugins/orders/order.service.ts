@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CheckoutService } from '../checkout/checkout.service.js';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'fulfilled' | 'returned';
@@ -28,7 +28,10 @@ export type OrderSnapshot = {
 export class OrderService {
   private readonly ordersByTenant = new Map<string, OrderSnapshot[]>();
 
-  constructor(private readonly checkoutService: CheckoutService) {}
+  constructor(
+    @Inject(CheckoutService)
+    private readonly checkoutService: CheckoutService,
+  ) {}
 
   listOrders(tenantId: string): OrderSnapshot[] {
     return [...(this.ordersByTenant.get(tenantId) ?? [])];

@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Post,
   Req,
@@ -26,8 +27,11 @@ type TestWebhookBody = {
 @Controller('webhooks')
 export class WebhooksController {
   constructor(
+    @Inject(WebhooksService)
     private readonly webhooksService: WebhooksService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
+    @Inject(AuditLogService)
     private readonly auditLogService: AuditLogService,
   ) {}
 

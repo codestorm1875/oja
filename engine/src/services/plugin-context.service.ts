@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { PluginDefinition, PluginManifest } from '../plugins/types.js';
 import { PluginRegistryService } from './plugin-registry.service.js';
 import { PluginEventBusService } from './event-bus.service.js';
@@ -33,10 +33,13 @@ export type PluginContext = PluginContextSummary & {
 @Injectable()
 export class PluginContextService {
   constructor(
+    @Inject(TenantConfigService)
     private readonly tenantConfigService: TenantConfigService,
+    @Inject(PluginRegistryService)
     private readonly pluginRegistryService: PluginRegistryService,
+    @Inject(PluginEventBusService)
     private readonly eventBusService: PluginEventBusService,
-  ) { }
+  ) {}
 
   createForTenant(tenant: PluginTenantContext): PluginContext {
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenant.id);

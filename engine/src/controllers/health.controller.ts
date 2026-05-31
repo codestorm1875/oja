@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Inject, Req } from '@nestjs/common';
 import { PluginEventBusService } from '../services/event-bus.service.js';
 import { PluginContextService } from '../services/plugin-context.service.js';
 import { PluginRegistryService } from '../services/plugin-registry.service.js';
@@ -7,11 +7,15 @@ import { TenantConfigService } from '../services/tenant-config.service.js';
 @Controller()
 export class HealthController {
   constructor(
+    @Inject(TenantConfigService)
     private readonly tenantConfigService: TenantConfigService,
+    @Inject(PluginRegistryService)
     private readonly pluginRegistryService: PluginRegistryService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
+    @Inject(PluginEventBusService)
     private readonly pluginEventBusService: PluginEventBusService,
-  ) { }
+  ) {}
 
   @Get('/healthz')
   healthz(

@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PluginContextService, type PluginTenantContext } from '../../services/plugin-context.service.js';
 import { CatalogService } from '../../plugins/catalog/catalog.service.js';
 
 @Injectable()
 export class StorefrontService {
   constructor(
+    @Inject(CatalogService)
     private readonly catalogService: CatalogService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
   ) {}
 

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Req,
@@ -20,7 +21,9 @@ type CreatePaymentIntentBody = {
 @Controller('payments')
 export class PaymentsController {
   constructor(
+    @Inject(PaymentsService)
     private readonly paymentsService: PaymentsService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
   ) {}
 

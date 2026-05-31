@@ -1,13 +1,15 @@
-import { Controller, Get, NotFoundException, Param, Req } from '@nestjs/common';
+import { Controller, Get, Inject, NotFoundException, Param, Req } from '@nestjs/common';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { CatalogService } from './catalog.service.js';
 
 @Controller('catalog')
 export class CatalogController {
   constructor(
+    @Inject(CatalogService)
     private readonly catalogService: CatalogService,
+    @Inject(PluginContextService)
     private readonly pluginContextService: PluginContextService,
-  ) { }
+  ) {}
 
   @Get('products')
   listProducts(@Req() req: any): {

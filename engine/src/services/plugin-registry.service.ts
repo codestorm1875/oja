@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { pluginRegistry } from '../plugins/registry.js';
 import type { PluginDefinition } from '../plugins/types.js';
 import { TenantConfigService } from './tenant-config.service.js';
@@ -9,7 +9,10 @@ export class PluginRegistryService {
     pluginRegistry.map((plugin) => [plugin.manifest.id, plugin]),
   );
 
-  constructor(private readonly tenantConfigService: TenantConfigService) {
+  constructor(
+    @Inject(TenantConfigService)
+    private readonly tenantConfigService: TenantConfigService,
+  ) {
     this.validateRegistry();
   }
 

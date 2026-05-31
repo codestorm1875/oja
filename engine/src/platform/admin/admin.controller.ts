@@ -1,9 +1,12 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Req } from '@nestjs/common';
 import { AdminService } from './admin.service.js';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    @Inject(AdminService)
+    private readonly adminService: AdminService,
+  ) {}
 
   @Get()
   snapshot(@Req() _req: any): unknown {
