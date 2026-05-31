@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CheckoutService } from '../checkout/checkout.service.js';
+import { CheckoutQuote, CheckoutService } from '../checkout/checkout.service.js';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'fulfilled' | 'returned';
 
@@ -43,9 +43,13 @@ export class OrderService {
 
   createOrder(tenantId: string, currency: string): OrderSnapshot {
     const quote = this.checkoutService.createQuote(tenantId, currency);
+    return this.createOrderFromQuote(quote);
+  }
+
+  createOrderFromQuote(quote: CheckoutQuote): OrderSnapshot {
     const order: OrderSnapshot = {
       id: `order_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
-      tenantId,
+      tenantId: quote.tenantId,
       status: 'confirmed',
       subtotalSnapshot: quote.subtotal,
       discountSnapshot: quote.discount,
@@ -56,8 +60,8 @@ export class OrderService {
       createdAt: new Date().toISOString(),
     };
 
-    const orders = this.ordersByTenant.get(tenantId) ?? [];
-    this.ordersByTenant.set(tenantId, [order, ...orders]);
+    const orders = this.ordersByTenant.get(quote.tenantId) ?? [];
+    this.ordersByTenant.set(quote.tenantId, [order, ...orders]);
 
     return order;
   }

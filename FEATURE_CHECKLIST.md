@@ -75,17 +75,17 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Tenant-aware quote endpoint.
 - [x] Checkout quote event emission.
 - [x] Checkout quote from cart ID.
-- [ ] Full checkout pipeline.
-- [ ] Cart validation step.
-- [ ] Inventory reservation step.
+- [x] Checkout pipeline scaffold.
+- [x] Cart validation step.
+- [x] Inventory reservation step.
 - [ ] Discount evaluation step wired into checkout.
-- [ ] Tax calculation step.
-- [ ] Payment initiation step.
-- [ ] Order creation on successful payment.
-- [ ] Reservation release on failure.
+- [x] Tax calculation step.
+- [x] Payment initiation step.
+- [x] Order creation on successful payment.
+- [x] Reservation release on failure.
 - [ ] Plugin hook execution during checkout.
 - [ ] Idempotent checkout attempts.
-- [ ] Checkout error recovery.
+- [x] Checkout error recovery scaffold.
 
 ## Orders
 

@@ -25,6 +25,7 @@
 - Cart creation now requires a session or customer owner and merges repeated creates into the existing active cart.
 - Checkout plugin slice is in place with tenant-aware quoting and checkout event emission.
 - Checkout quotes can now be generated from a specific cart ID.
+- Checkout now has a POST pipeline scaffold for cart validation, inventory reservation, payment intent creation, order creation, events, and reservation rollback on failure.
 - Order management slice is in place with tenant-aware order creation and lookup.
 - Inventory slice is in place with tenant-aware stock tracking and reservations.
 - Discount engine slice is in place with tenant-aware discount evaluation.
@@ -56,9 +57,9 @@
 ## Next
 
 1. Add Redis-backed cart sessions and cart persistence.
-2. Expand checkout from quote scaffolding into the full pipeline in `build.md`.
-3. Add provider adapter interfaces for payments and email before wiring real vendors.
-4. Add webhook delivery signatures, retries, and dead-letter persistence.
+2. Add provider adapter interfaces for payments and email before wiring real vendors.
+3. Add webhook delivery signatures, retries, and dead-letter persistence.
+4. Add checkout idempotency and durable order/payment persistence.
 
 ## Remaining Work
 
@@ -74,7 +75,7 @@
 
 - Redis-backed cart sessions and durable cart persistence.
 - Replace in-memory plugin state with PostgreSQL and Redis-backed stores.
-- Expand checkout from quote/event scaffolding into the full pipeline in `build.md`.
+- Expand checkout pipeline scaffold into durable production workflow.
 - Product CRUD, variants, categories, attributes, price tiers, images, and soft deletes.
 - Order lifecycle FSM and durable order snapshots.
 - Inventory reservation TTL and multi-warehouse support.
