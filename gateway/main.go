@@ -9,21 +9,23 @@ import (
 	"time"
 
 	"github.com/codestorm1875/oja/gateway/internal/auth"
+	"github.com/codestorm1875/oja/gateway/internal/config"
 	"github.com/codestorm1875/oja/gateway/internal/proxy"
 	"github.com/codestorm1875/oja/gateway/internal/ratelimit"
 	"github.com/redis/go-redis/v9"
 )
 
 func main() {
-	tenantDirectoryPath := os.Getenv("GATEWAY_TENANTS_FILE")
-	if tenantDirectoryPath == "" {
-		tenantDirectoryPath = "gateway/tenants.json"
+	envFile := os.Getenv("ENV_FILE")
+	if envFile == "" {
+		envFile = ".env"
 	}
 
-	tenantService, err := auth.NewFileTenantLookupService(tenantDirectoryPath)
-	if err != nil {
+	if err := config.LoadEnvFile(envFile); err != nil {
 		log.Fatal(err)
 	}
+
+	tenantService := buildTenantLookupService()
 
 	redisAddr := os.Getenv("REDIS_ADDR")
 	if redisAddr == "" {
@@ -72,4 +74,27 @@ func main() {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
+}
+
+func buildTenantLookupService() auth.TenantLookupService {
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL != "" {
+		tenantService, err := auth.NewPostgresTenantLookupService(databaseURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return tenantService
+	}
+
+	tenantDirectoryPath := os.Getenv("GATEWAY_TENANTS_FILE")
+	if tenantDirectoryPath == "" {
+		tenantDirectoryPath = "gateway/tenants.json"
+	}
+
+	tenantService, err := auth.NewFileTenantLookupService(tenantDirectoryPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return tenantService
 }

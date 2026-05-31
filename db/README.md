@@ -10,6 +10,7 @@ Schema, migrations, and seed data live here.
 ## Current Files
 
 - `migrations/001_initial_schema.sql` - initial multi-tenant commerce schema with RLS, core commerce tables, webhook/email delivery tables, indexes, and outbox support.
+- `migrations/002_gateway_api_key_lookup.sql` - gateway-safe hashed API-key lookup function for tenant resolution before tenant RLS context is known.
 - `seeds/dev.sql` - development tenants, stores, API key hashes, and enabled plugins matching the current fixture tenants.
 
 ## Local Usage

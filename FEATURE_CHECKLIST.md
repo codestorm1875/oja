@@ -12,6 +12,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Initial database schema, migration, and dev seed data.
 - [x] Local migration and seed scripts.
 - [x] Environment templates with ignored local and production secret files.
+- [x] Gateway-safe PostgreSQL API-key lookup function.
 - [ ] Production migration runner and rollback workflow.
 - [ ] Durable backend persistence across engine modules.
 - [ ] End-to-end integration test suite.
@@ -23,6 +24,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Tenant context middleware in the engine.
 - [x] Tenant config lookup from `engine/tenants.json`.
 - [x] Gateway API-key tenant resolution from `gateway/tenants.json`.
+- [x] Gateway PostgreSQL tenant lookup with hashed API-key verification.
 - [x] Gateway tenant context propagation to the engine.
 - [x] Plugin registry with manifest-bearing plugin definitions.
 - [x] Plugin dependency validation.
@@ -30,8 +32,8 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] In-process event bus.
 - [x] Sandboxed plugin context with tenant data and event emission.
 - [x] Recent event snapshot support.
-- [ ] Tenant persistence in PostgreSQL.
-- [ ] Hashed API keys.
+- [x] Hashed API-key verification in the gateway.
+- [ ] Engine tenant config persistence in PostgreSQL.
 - [ ] API key rotation and revocation.
 - [ ] Per-tenant plugin config persistence.
 - [ ] Plugin config schema declaration and validation.
@@ -219,13 +221,14 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Tenant/path scoped rate limit keys.
 - [x] Rate limit response headers.
 - [x] Gateway package split into auth, proxy, and ratelimit internals.
-- [ ] Hashed API key lookup.
-- [ ] PostgreSQL-backed tenant lookup.
+- [x] Hashed API key lookup.
+- [x] PostgreSQL-backed tenant lookup.
 - [ ] Request ID injection.
 - [ ] CORS policy.
 - [ ] Structured gateway logging.
 - [ ] Gateway metrics.
-- [ ] Gateway auth tests.
+- [x] Gateway env loader tests.
+- [ ] Gateway auth database integration tests.
 - [ ] Gateway proxy tests.
 
 ## Worker And Queues

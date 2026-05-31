@@ -21,3 +21,5 @@ cp .env.example .env
 ```
 
 Use `.env.production.example` as the production template. Real `.env` and `.env.production` files are ignored by git and must not contain committed secrets.
+
+When `DATABASE_URL` is set, the gateway resolves API keys from PostgreSQL using hashed keys in the `api_keys` table. Without `DATABASE_URL`, it falls back to the local `gateway/tenants.json` fixture.
