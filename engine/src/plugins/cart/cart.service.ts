@@ -30,6 +30,10 @@ type CreateCartInput = {
   currency: string;
   customerId?: string;
   sessionId?: string;
+  items: Array<{
+    productId: string;
+    quantity: number;
+  }>;
 };
 
 type AddItemInput = {
@@ -51,6 +55,13 @@ export class CartService {
   ) {}
 
   createCart(input: CreateCartInput): Cart {
+    if (input.items.length === 0) {
+      throw new Error('cart must include at least one item');
+    }
+
+    const items = input.items.map((item) =>
+      this.createCartItem(input.tenantId, item.productId, item.quantity),
+    );
     const now = new Date();
     const cart: Cart = {
       id: `cart_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
@@ -59,7 +70,7 @@ export class CartService {
       currency: input.currency,
       customerId: input.customerId,
       sessionId: input.sessionId,
-      items: [],
+      items,
       expiresAt: new Date(now.getTime() + CART_TTL_MS).toISOString(),
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
@@ -84,25 +95,18 @@ export class CartService {
     }
 
     const cart = this.getRequiredCart(input.tenantId, input.cartId);
-    const product = this.catalogService.getProduct(input.tenantId, input.productId);
-
-    if (!product || !product.active) {
-      throw new Error(`Catalog product ${input.productId} not found`);
-    }
+    const nextItem = this.createCartItem(
+      input.tenantId,
+      input.productId,
+      input.quantity,
+    );
 
     const existingItem = cart.items.find((item) => item.productId === input.productId);
     if (existingItem) {
       existingItem.quantity += input.quantity;
       existingItem.lineTotal = existingItem.unitPrice * existingItem.quantity;
     } else {
-      cart.items.push({
-        productId: product.id,
-        name: product.name,
-        quantity: input.quantity,
-        unitPrice: product.price,
-        currency: product.currency,
-        lineTotal: product.price * input.quantity,
-      });
+      cart.items.push(nextItem);
     }
 
     this.touchCart(cart);
@@ -162,6 +166,31 @@ export class CartService {
   private storeCart(cart: Cart): void {
     const carts = this.cartsByTenant.get(cart.tenantId) ?? [];
     this.cartsByTenant.set(cart.tenantId, [cart, ...carts]);
+  }
+
+  private createCartItem(
+    tenantId: string,
+    productId: string,
+    quantity: number,
+  ): CartItem {
+    if (quantity <= 0) {
+      throw new Error('quantity must be a positive number');
+    }
+
+    const product = this.catalogService.getProduct(tenantId, productId);
+
+    if (!product || !product.active) {
+      throw new Error(`Catalog product ${productId} not found`);
+    }
+
+    return {
+      productId: product.id,
+      name: product.name,
+      quantity,
+      unitPrice: product.price,
+      currency: product.currency,
+      lineTotal: product.price * quantity,
+    };
   }
 
   private touchCart(cart: Cart): void {

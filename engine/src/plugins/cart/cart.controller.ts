@@ -18,6 +18,7 @@ import { CartService } from './cart.service.js';
 type CreateCartBody = {
   customerId?: string;
   sessionId?: string;
+  items?: CartItemBody[];
 };
 
 type CartItemBody = {
@@ -50,15 +51,26 @@ export class CartController {
   createCart(@Req() req: any, @Body() body: CreateCartBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenantContext.id);
+    const items = this.parseCartItems(body.items);
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
-    const cart = this.cartService.createCart({
-      tenantId: tenantContext.id,
-      currency: tenantConfig.currency,
-      customerId: body.customerId,
-      sessionId: body.sessionId,
-    });
+    const cart = this.runCartMutation(() =>
+      this.cartService.createCart({
+        tenantId: tenantContext.id,
+        currency: tenantConfig.currency,
+        customerId: body.customerId,
+        sessionId: body.sessionId,
+        items,
+      }),
+    );
 
-    pluginContext.emitEvent('cart.created', { cartId: cart.id }, 'cart');
+    pluginContext.emitEvent(
+      'cart.created',
+      {
+        cartId: cart.id,
+        itemCount: cart.items.length,
+      },
+      'cart',
+    );
 
     return {
       tenant: pluginContext.tenant,
@@ -189,5 +201,34 @@ export class CartController {
         error instanceof Error ? error.message : 'cart mutation failed',
       );
     }
+  }
+
+  private parseCartItems(items?: CartItemBody[]): Array<{
+    productId: string;
+    quantity: number;
+  }> {
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException('items must include at least one cart item');
+    }
+
+    return items.map((item, index) => {
+      const productId = String(item.productId ?? '').trim();
+      const quantity = Number(item.quantity ?? 1);
+
+      if (!productId) {
+        throw new BadRequestException(`items[${index}].productId is required`);
+      }
+
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new BadRequestException(
+          `items[${index}].quantity must be a positive number`,
+        );
+      }
+
+      return {
+        productId,
+        quantity,
+      };
+    });
   }
 }
