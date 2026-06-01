@@ -8,6 +8,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { PaymentsService, PaymentProvider } from './payments.service.js';
 
@@ -18,6 +19,7 @@ type CreatePaymentIntentBody = {
   provider?: PaymentProvider;
 };
 
+@ApiTags('payments')
 @Controller('payments')
 export class PaymentsController {
   constructor(
@@ -28,6 +30,7 @@ export class PaymentsController {
   ) {}
 
   @Get('providers')
+  @ApiOperation({ summary: 'List registered payment providers and supported currencies.' })
   listProviders(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -38,6 +41,7 @@ export class PaymentsController {
   }
 
   @Get('intents')
+  @ApiOperation({ summary: 'List payment intents for the current tenant.' })
   listIntents(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -48,6 +52,7 @@ export class PaymentsController {
   }
 
   @Get('intents/:intentId')
+  @ApiOperation({ summary: 'Get one payment intent by intent ID.' })
   getIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const intent = this.paymentsService.getIntent(tenantContext.id, intentId);
@@ -63,6 +68,7 @@ export class PaymentsController {
   }
 
   @Post('intents')
+  @ApiOperation({ summary: 'Create a payment intent through the configured provider adapter.' })
   createIntent(@Req() req: any, @Body() body: CreatePaymentIntentBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const amount = Number(body.amount ?? 0);
@@ -105,6 +111,7 @@ export class PaymentsController {
   }
 
   @Post('intents/:intentId/authorize')
+  @ApiOperation({ summary: 'Authorize a payment intent through its provider adapter.' })
   authorizeIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
@@ -125,6 +132,7 @@ export class PaymentsController {
   }
 
   @Post('intents/:intentId/capture')
+  @ApiOperation({ summary: 'Capture a payment intent through its provider adapter.' })
   captureIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
@@ -145,6 +153,7 @@ export class PaymentsController {
   }
 
   @Post('intents/:intentId/refund')
+  @ApiOperation({ summary: 'Refund a payment intent through its provider adapter.' })
   refundIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);

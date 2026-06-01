@@ -7,6 +7,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuditLogService } from '../../services/audit-log.service.js';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { type EmailProvider } from './email-adapters.js';
@@ -20,6 +21,7 @@ type SendTestEmailBody = {
   provider?: EmailProvider;
 };
 
+@ApiTags('notifications')
 @Controller('notifications')
 export class NotificationsController {
   constructor(
@@ -32,6 +34,7 @@ export class NotificationsController {
   ) {}
 
   @Get('email/providers')
+  @ApiOperation({ summary: 'List registered email provider adapters.' })
   listEmailProviders(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -42,6 +45,7 @@ export class NotificationsController {
   }
 
   @Get('email/deliveries')
+  @ApiOperation({ summary: 'List recent email delivery records for the current tenant.' })
   listEmailDeliveries(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -52,6 +56,7 @@ export class NotificationsController {
   }
 
   @Post('email/test')
+  @ApiOperation({ summary: 'Send a test email through the configured email adapter.' })
   sendTestEmail(@Req() req: any, @Body() body: SendTestEmailBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const to = String(body.to ?? '').trim();

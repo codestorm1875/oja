@@ -1,9 +1,11 @@
 import { Controller, Get, Inject, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginEventBusService } from '../services/event-bus.service.js';
 import { PluginContextService } from '../services/plugin-context.service.js';
 import { PluginRegistryService } from '../services/plugin-registry.service.js';
 import { TenantConfigService } from '../services/tenant-config.service.js';
 
+@ApiTags('health')
 @Controller()
 export class HealthController {
   constructor(
@@ -18,6 +20,7 @@ export class HealthController {
   ) {}
 
   @Get('/healthz')
+  @ApiOperation({ summary: 'Check engine health and show tenant/plugin runtime context.' })
   healthz(
     @Req() req: any,
   ): {

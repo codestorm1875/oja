@@ -1,7 +1,9 @@
 import { BadRequestException, Controller, Get, Inject, Query, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { DiscountsService } from './discounts.service.js';
 
+@ApiTags('discounts')
 @Controller('discounts')
 export class DiscountsController {
   constructor(
@@ -12,6 +14,7 @@ export class DiscountsController {
   ) {}
 
   @Get('rules')
+  @ApiOperation({ summary: 'List discount rules for the current tenant.' })
   listRules(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -22,6 +25,7 @@ export class DiscountsController {
   }
 
   @Get('evaluate')
+  @ApiOperation({ summary: 'Evaluate tenant discount rules against a subtotal and optional code.' })
   evaluate(
     @Req() req: any,
     @Query('subtotal') subtotalValue?: string,

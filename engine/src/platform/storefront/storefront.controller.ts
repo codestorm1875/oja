@@ -1,7 +1,9 @@
 import { NotFoundException, Controller, Get, Inject, Param, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { StorefrontService } from './storefront.service.js';
 
+@ApiTags('storefront')
 @Controller('storefront')
 export class StorefrontController {
   constructor(
@@ -12,6 +14,7 @@ export class StorefrontController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get storefront overview data for the current tenant.' })
   getStorefront(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const storefront = this.storefrontService.getStorefront(tenantContext);
@@ -23,6 +26,7 @@ export class StorefrontController {
   }
 
   @Get('products')
+  @ApiOperation({ summary: 'List storefront products for the current tenant.' })
   listProducts(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -33,6 +37,7 @@ export class StorefrontController {
   }
 
   @Get('products/:productId')
+  @ApiOperation({ summary: 'Get one storefront product by product ID.' })
   getProduct(@Req() req: any, @Param('productId') productId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const product = this.storefrontService.getProduct(tenantContext, productId);

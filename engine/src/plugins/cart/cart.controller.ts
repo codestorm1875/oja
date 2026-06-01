@@ -11,6 +11,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { TenantConfigService } from '../../services/tenant-config.service.js';
 import { CartService } from './cart.service.js';
@@ -26,6 +27,7 @@ type CartItemBody = {
   quantity?: number;
 };
 
+@ApiTags('cart')
 @Controller('cart')
 export class CartController {
   constructor(
@@ -38,6 +40,7 @@ export class CartController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'List active and recent carts for the current tenant.' })
   listCarts(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -48,6 +51,7 @@ export class CartController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create or merge an active cart for a session or customer.' })
   createCart(@Req() req: any, @Body() body: CreateCartBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenantContext.id);
@@ -86,6 +90,7 @@ export class CartController {
   }
 
   @Get(':cartId')
+  @ApiOperation({ summary: 'Get one cart by cart ID.' })
   getCart(@Req() req: any, @Param('cartId') cartId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const cart = this.cartService.getCart(tenantContext.id, cartId);
@@ -101,6 +106,7 @@ export class CartController {
   }
 
   @Post(':cartId/items')
+  @ApiOperation({ summary: 'Add an item to a cart, merging quantity when the product already exists.' })
   addItem(
     @Req() req: any,
     @Param('cartId') cartId: string,
@@ -141,6 +147,7 @@ export class CartController {
   }
 
   @Patch(':cartId/items/:productId')
+  @ApiOperation({ summary: 'Set a cart item quantity; use zero to remove the item.' })
   updateItem(
     @Req() req: any,
     @Param('cartId') cartId: string,
@@ -177,6 +184,7 @@ export class CartController {
   }
 
   @Delete(':cartId/items/:productId')
+  @ApiOperation({ summary: 'Remove a product from a cart.' })
   removeItem(
     @Req() req: any,
     @Param('cartId') cartId: string,

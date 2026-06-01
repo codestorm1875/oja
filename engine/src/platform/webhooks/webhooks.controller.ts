@@ -9,9 +9,14 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuditLogService } from '../../services/audit-log.service.js';
 import { PluginContextService } from '../../services/plugin-context.service.js';
-import { WebhooksService, type WebhookFailureMode } from './webhooks.service.js';
+import {
+  WebhooksService,
+  type WebhookDeliveryStatus,
+  type WebhookFailureMode,
+} from './webhooks.service.js';
 
 type RegisterWebhookBody = {
   url?: string;
@@ -24,6 +29,7 @@ type TestWebhookBody = {
   payload?: Record<string, unknown>;
 };
 
+@ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhooksController {
   constructor(
@@ -36,6 +42,7 @@ export class WebhooksController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'List webhook registrations and recent deliveries for the tenant.' })
   listWebhooks(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -46,7 +53,8 @@ export class WebhooksController {
     };
   }
 
-  @Post('deliveries/retry-due')
+  @Post('deliveries/failed/retry')
+  @ApiOperation({ summary: 'Retry failed webhook deliveries whose retry time is due.' })
   retryDueDeliveries(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const result = this.webhooksService.retryDueDeliveries(tenantContext.id);
@@ -68,19 +76,34 @@ export class WebhooksController {
     };
   }
 
-  @Get('deliveries/dead')
-  listDeadDeliveries(@Req() req: any): unknown {
+  @Get('deliveries/:status')
+  @ApiOperation({ summary: 'List webhook deliveries by status.' })
+  @ApiParam({
+    name: 'status',
+    enum: ['delivered', 'failed', 'dead'],
+    description: 'Delivery status to filter by.',
+  })
+  listDeliveriesByStatus(
+    @Req() req: any,
+    @Param('status') status: WebhookDeliveryStatus,
+  ): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
+    const statuses: WebhookDeliveryStatus[] = ['delivered', 'failed', 'dead'];
+
+    if (!statuses.includes(status)) {
+      throw new BadRequestException('status must be one of delivered, failed, dead');
+    }
 
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
       deliveries: this.webhooksService
         .listDeliveries(tenantContext.id)
-        .filter((delivery) => delivery.status === 'dead'),
+        .filter((delivery) => delivery.status === status),
     };
   }
 
   @Post()
+  @ApiOperation({ summary: 'Register a webhook endpoint and return its one-time signing secret.' })
   registerWebhook(@Req() req: any, @Body() body: RegisterWebhookBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const url = String(body.url ?? '').trim();
@@ -116,6 +139,7 @@ export class WebhooksController {
   }
 
   @Post(':webhookId/test')
+  @ApiOperation({ summary: 'Create a signed test delivery for a webhook.' })
   testWebhook(
     @Req() req: any,
     @Param('webhookId') webhookId: string,
@@ -149,6 +173,7 @@ export class WebhooksController {
   }
 
   @Get(':webhookId')
+  @ApiOperation({ summary: 'Get one webhook registration and its recent deliveries.' })
   getWebhook(@Req() req: any, @Param('webhookId') webhookId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const webhook = this.webhooksService.getWebhook(tenantContext.id, webhookId);
@@ -167,6 +192,7 @@ export class WebhooksController {
   }
 
   @Delete(':webhookId')
+  @ApiOperation({ summary: 'Remove a webhook registration.' })
   removeWebhook(@Req() req: any, @Param('webhookId') webhookId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const removed = this.webhooksService.removeWebhook(tenantContext.id, webhookId);

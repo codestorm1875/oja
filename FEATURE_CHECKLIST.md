@@ -167,7 +167,8 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Webhook signing.
 - [x] Retry scheduling with exponential backoff.
 - [x] Dead-letter queue scaffold.
-- [x] Manual retry-due endpoint.
+- [x] Status-based webhook delivery listing.
+- [x] Manual failed-delivery retry endpoint.
 - [ ] Durable webhook registration persistence.
 - [ ] Durable delivery persistence.
 - [ ] Worker-backed delivery processing.
@@ -201,6 +202,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Storefront product listing.
 - [x] Storefront product lookup.
 - [x] OpenAPI/Swagger setup.
+- [x] Swagger operation descriptions on API controllers.
 - [ ] Admin authentication and authorization.
 - [ ] Admin mutation endpoints.
 - [ ] Store management endpoints.

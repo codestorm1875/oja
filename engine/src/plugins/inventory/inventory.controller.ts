@@ -1,7 +1,9 @@
 import { BadRequestException, Controller, Get, Inject, Param, Post, Query, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { InventoryService } from './inventory.service.js';
 
+@ApiTags('inventory')
 @Controller('inventory')
 export class InventoryController {
   constructor(
@@ -12,6 +14,7 @@ export class InventoryController {
   ) {}
 
   @Get('stock')
+  @ApiOperation({ summary: 'List inventory stock levels for the current tenant.' })
   listStock(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
@@ -23,6 +26,7 @@ export class InventoryController {
   }
 
   @Post('reserve/:productId')
+  @ApiOperation({ summary: 'Reserve inventory for a product.' })
   reserve(
     @Req() req: any,
     @Param('productId') productId: string,
@@ -68,6 +72,7 @@ export class InventoryController {
   }
 
   @Post('release/:productId')
+  @ApiOperation({ summary: 'Release previously reserved inventory for a product.' })
   release(
     @Req() req: any,
     @Param('productId') productId: string,

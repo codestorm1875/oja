@@ -33,8 +33,9 @@
 - Payment provider adapter interface and mock adapter registry are in place.
 - Webhook platform slice is in place with tenant-aware registration and delivery fanout.
 - Webhook registrations now generate signing secrets and delivery records include HMAC signature metadata.
-- Webhook delivery retry scheduling and dead-letter scaffolding are in place with a manual retry-due endpoint.
+- Webhook delivery retry scheduling and dead-letter scaffolding are in place with status-based delivery listing and manual failed-delivery retry.
 - Notification platform slice is in place with a mock email provider adapter and test email endpoint.
+- Swagger docs now include tags and operation summaries across API controllers.
 - Admin API slice is in place with tenant, plugin, and event snapshots.
 - Storefront API slice is in place with tenant-aware public catalog endpoints.
 - Webhook fanout is attached to the in-process plugin event bus at engine bootstrap.

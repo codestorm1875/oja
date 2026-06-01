@@ -1,7 +1,9 @@
 import { Controller, Get, Inject, NotFoundException, Param, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { CatalogService } from './catalog.service.js';
 
+@ApiTags('catalog')
 @Controller('catalog')
 export class CatalogController {
   constructor(
@@ -12,6 +14,7 @@ export class CatalogController {
   ) {}
 
   @Get('products')
+  @ApiOperation({ summary: 'List active catalog products for the current tenant.' })
   listProducts(@Req() req: any): {
     tenant: unknown;
     products: unknown;
@@ -32,6 +35,7 @@ export class CatalogController {
   }
 
   @Get('products/:productId')
+  @ApiOperation({ summary: 'Get one catalog product by product ID.' })
   getProduct(@Req() req: any, @Param('productId') productId: string): {
     tenant: unknown;
     product: unknown;

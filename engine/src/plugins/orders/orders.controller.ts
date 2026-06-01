@@ -1,8 +1,10 @@
 import { Controller, Get, Inject, NotFoundException, Param, Post, Req } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { TenantConfigService } from '../../services/tenant-config.service.js';
 import { OrderService } from './order.service.js';
 
+@ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(
@@ -15,6 +17,7 @@ export class OrdersController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'List recent orders for the current tenant.' })
   listOrders(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
 
@@ -25,6 +28,7 @@ export class OrdersController {
   }
 
   @Get(':orderId')
+  @ApiOperation({ summary: 'Get one order by order ID.' })
   getOrder(@Req() req: any, @Param('orderId') orderId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const order = this.orderService.getOrder(tenantContext.id, orderId);
@@ -40,6 +44,7 @@ export class OrdersController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create an order from the default checkout quote scaffold.' })
   createOrder(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenantContext.id);

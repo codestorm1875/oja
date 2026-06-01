@@ -8,6 +8,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PluginContextService } from '../../services/plugin-context.service.js';
 import { TenantConfigService } from '../../services/tenant-config.service.js';
 import { CartService } from '../cart/cart.service.js';
@@ -21,6 +22,7 @@ type CheckoutBody = {
   paymentProvider?: PaymentProvider;
 };
 
+@ApiTags('checkout')
 @Controller('checkout')
 export class CheckoutController {
   constructor(
@@ -41,6 +43,7 @@ export class CheckoutController {
   ) {}
 
   @Get('quote')
+  @ApiOperation({ summary: 'Create a checkout quote from the default cart fixture or a specific cart ID.' })
   quote(@Req() req: any, @Query('cartId') cartId?: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const tenantConfig = this.tenantConfigService.getTenantConfig(tenantContext.id);
@@ -83,6 +86,7 @@ export class CheckoutController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Run the checkout pipeline scaffold for a cart.' })
   checkout(@Req() req: any, @Body() body: CheckoutBody = {}): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const cartId = String(body.cartId ?? '').trim();
