@@ -4,6 +4,10 @@ import { PluginEventBusService, type PluginEvent } from '../../services/event-bu
 
 export type WebhookFailureMode = 'none' | 'always';
 export type WebhookDeliveryStatus = 'delivered' | 'failed' | 'dead';
+export type WebhookRetryResult = {
+  retried: WebhookDelivery[];
+  deadLettered: WebhookDelivery[];
+};
 
 export type WebhookRegistration = {
   id: string;
@@ -41,6 +45,7 @@ export type WebhookDelivery = {
   deliveredAt: string | null;
   deadLetteredAt: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 type RegisterWebhookInput = {
@@ -49,6 +54,9 @@ type RegisterWebhookInput = {
   eventTypes?: string[];
   failureMode?: WebhookFailureMode;
 };
+
+const MAX_DELIVERY_ATTEMPTS = 3;
+const BASE_RETRY_DELAY_MS = 60_000;
 
 @Injectable()
 export class WebhooksService {
@@ -129,6 +137,58 @@ export class WebhooksService {
     return this.createDelivery(webhook, eventType, payload, true);
   }
 
+  retryDueDeliveries(tenantId: string, now = new Date()): WebhookRetryResult {
+    const deliveries = this.deliveriesByTenant.get(tenantId) ?? [];
+    const retried: WebhookDelivery[] = [];
+    const deadLettered: WebhookDelivery[] = [];
+
+    for (const delivery of deliveries) {
+      if (delivery.status !== 'failed' || !delivery.nextRetryAt) {
+        continue;
+      }
+
+      if (new Date(delivery.nextRetryAt) > now) {
+        continue;
+      }
+
+      const webhook = (this.webhooksByTenant.get(tenantId) ?? []).find(
+        (entry) => entry.id === delivery.webhookId,
+      );
+
+      if (!webhook || !webhook.enabled) {
+        this.markDeliveryDead(delivery);
+        deadLettered.push({ ...delivery });
+        continue;
+      }
+
+      delivery.attempts += 1;
+      delivery.updatedAt = now.toISOString();
+
+      if (webhook.failureMode === 'always' && delivery.attempts >= MAX_DELIVERY_ATTEMPTS) {
+        this.markDeliveryDead(delivery);
+        deadLettered.push({ ...delivery });
+        continue;
+      }
+
+      if (webhook.failureMode === 'always') {
+        this.markDeliveryFailed(delivery);
+        retried.push({ ...delivery });
+        continue;
+      }
+
+      delivery.status = 'delivered';
+      delivery.httpStatus = 200;
+      delivery.nextRetryAt = null;
+      delivery.deliveredAt = now.toISOString();
+      retried.push({ ...delivery });
+    }
+
+    return {
+      retried,
+      deadLettered,
+    };
+  }
+
   snapshot(tenantId: string): { webhooks: WebhookRegistration[]; deliveries: WebhookDelivery[] } {
     return {
       webhooks: this.listWebhooks(tenantId),
@@ -160,7 +220,6 @@ export class WebhooksService {
   ): WebhookDelivery {
     const now = new Date().toISOString();
     const shouldFail = webhook.failureMode === 'always' && !forceDelivery;
-    const attempts = shouldFail ? 3 : 1;
     const signatureTimestamp = String(Math.floor(Date.now() / 1000));
     const signature = this.signPayload(webhook.secret, signatureTimestamp, {
       eventType,
@@ -172,16 +231,17 @@ export class WebhooksService {
       webhookId: webhook.id,
       eventType,
       payload,
-      status: shouldFail ? 'dead' : 'delivered',
-      attempts,
+      status: shouldFail ? 'failed' : 'delivered',
+      attempts: 1,
       httpStatus: shouldFail ? 503 : 200,
       signature,
       signatureTimestamp,
       signatureHeader: `t=${signatureTimestamp},v1=${signature}`,
-      nextRetryAt: shouldFail ? new Date(Date.now() + 60_000).toISOString() : null,
+      nextRetryAt: shouldFail ? this.nextRetryAt(1) : null,
       deliveredAt: shouldFail ? null : now,
-      deadLetteredAt: shouldFail ? now : null,
+      deadLetteredAt: null,
       createdAt: now,
+      updatedAt: now,
     };
 
     this.storeDelivery(delivery);
@@ -220,6 +280,23 @@ export class WebhooksService {
     this.deliveriesByTenant.set(delivery.tenantId, [delivery, ...deliveries].slice(0, 100));
   }
 
+  private markDeliveryFailed(delivery: WebhookDelivery): void {
+    delivery.status = 'failed';
+    delivery.httpStatus = 503;
+    delivery.nextRetryAt = this.nextRetryAt(delivery.attempts);
+    delivery.deliveredAt = null;
+  }
+
+  private markDeliveryDead(delivery: WebhookDelivery): void {
+    const now = new Date().toISOString();
+    delivery.status = 'dead';
+    delivery.httpStatus = 503;
+    delivery.nextRetryAt = null;
+    delivery.deliveredAt = null;
+    delivery.deadLetteredAt = now;
+    delivery.updatedAt = now;
+  }
+
   private toPublicWebhook(webhook: StoredWebhookRegistration): WebhookRegistration {
     const { secret: _secret, ...publicWebhook } = webhook;
     return publicWebhook;
@@ -227,6 +304,11 @@ export class WebhooksService {
 
   private generateSecret(): string {
     return `whsec_${randomBytes(24).toString('hex')}`;
+  }
+
+  private nextRetryAt(attempts: number): string {
+    const delay = BASE_RETRY_DELAY_MS * 2 ** Math.max(attempts - 1, 0);
+    return new Date(Date.now() + delay).toISOString();
   }
 
   private signPayload(

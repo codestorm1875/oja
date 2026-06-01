@@ -46,21 +46,37 @@ export class WebhooksController {
     };
   }
 
-  @Get(':webhookId')
-  getWebhook(@Req() req: any, @Param('webhookId') webhookId: string): unknown {
+  @Post('deliveries/retry-due')
+  retryDueDeliveries(@Req() req: any): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
-    const webhook = this.webhooksService.getWebhook(tenantContext.id, webhookId);
+    const result = this.webhooksService.retryDueDeliveries(tenantContext.id);
 
-    if (!webhook) {
-      throw new BadRequestException(`Webhook ${webhookId} not found`);
-    }
+    this.auditLogService.record({
+      tenantId: tenantContext.id,
+      action: 'webhook.deliveries.retry_due',
+      source: 'platform',
+      actor: 'admin',
+      metadata: {
+        retried: result.retried.length,
+        deadLettered: result.deadLettered.length,
+      },
+    });
 
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
-      webhook,
+      ...result,
+    };
+  }
+
+  @Get('deliveries/dead')
+  listDeadDeliveries(@Req() req: any): unknown {
+    const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
+
+    return {
+      tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
       deliveries: this.webhooksService
         .listDeliveries(tenantContext.id)
-        .filter((delivery) => delivery.webhookId === webhookId),
+        .filter((delivery) => delivery.status === 'dead'),
     };
   }
 
@@ -129,6 +145,24 @@ export class WebhooksController {
     return {
       tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
       delivery,
+    };
+  }
+
+  @Get(':webhookId')
+  getWebhook(@Req() req: any, @Param('webhookId') webhookId: string): unknown {
+    const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
+    const webhook = this.webhooksService.getWebhook(tenantContext.id, webhookId);
+
+    if (!webhook) {
+      throw new BadRequestException(`Webhook ${webhookId} not found`);
+    }
+
+    return {
+      tenant: this.pluginContextService.describeForTenant(tenantContext).tenant,
+      webhook,
+      deliveries: this.webhooksService
+        .listDeliveries(tenantContext.id)
+        .filter((delivery) => delivery.webhookId === webhookId),
     };
   }
 

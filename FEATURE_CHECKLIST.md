@@ -165,8 +165,9 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Signed webhook delivery metadata.
 - [ ] Real HTTP webhook delivery.
 - [x] Webhook signing.
-- [ ] Retry scheduling with exponential backoff.
-- [ ] Dead-letter queue.
+- [x] Retry scheduling with exponential backoff.
+- [x] Dead-letter queue scaffold.
+- [x] Manual retry-due endpoint.
 - [ ] Durable webhook registration persistence.
 - [ ] Durable delivery persistence.
 - [ ] Worker-backed delivery processing.
