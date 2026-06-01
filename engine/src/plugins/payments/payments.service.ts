@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import {
+  paymentProviderAdapters,
+  type PaymentProviderAdapter,
+} from './provider-adapters.js';
 
 export type PaymentProvider = 'stripe' | 'paystack' | 'flutterwave';
 
@@ -46,21 +50,24 @@ const PROVIDER_BY_TENANT: Record<string, TenantPaymentConfig> = {
 @Injectable()
 export class PaymentsService {
   private readonly intentsByTenant = new Map<string, PaymentIntent[]>();
+  private readonly adaptersByProvider = new Map<PaymentProvider, PaymentProviderAdapter>(
+    paymentProviderAdapters.map((adapter) => [adapter.provider, adapter]),
+  );
 
   listProviders(tenantId: string): PaymentProviderSummary[] {
     const config = this.getTenantConfig(tenantId);
 
     return [
-      config,
-      {
-        provider: 'paystack',
-        supportedCurrencies: ['NGN', 'USD'],
-      },
-      {
-        provider: 'flutterwave',
-        supportedCurrencies: ['NGN', 'USD', 'EUR'],
-      },
-    ];
+      config.provider,
+      ...[...this.adaptersByProvider.keys()].filter((provider) => provider !== config.provider),
+    ].map((provider) => {
+      const adapter = this.getRequiredAdapter(provider);
+
+      return {
+        provider,
+        supportedCurrencies: adapter.supportedCurrencies,
+      };
+    });
   }
 
   listIntents(tenantId: string): PaymentIntent[] {
@@ -84,11 +91,13 @@ export class PaymentsService {
 
     const tenantConfig = this.getTenantConfig(params.tenantId);
     const provider = params.provider ?? tenantConfig.provider;
+    const adapter = this.getRequiredAdapter(provider);
 
-    if (!this.isCurrencySupported(params.tenantId, provider, params.currency)) {
+    if (!adapter.supportedCurrencies.includes(params.currency)) {
       throw new Error(`Provider ${provider} does not support ${params.currency}`);
     }
 
+    const providerIntent = adapter.createIntent(params);
     const now = new Date().toISOString();
     const intent: PaymentIntent = {
       id: `pay_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
@@ -97,8 +106,8 @@ export class PaymentsService {
       provider,
       amount: params.amount,
       currency: params.currency,
-      status: 'pending',
-      reference: `${provider}_${Math.random().toString(36).slice(2, 10)}`,
+      status: providerIntent.status,
+      reference: providerIntent.reference,
       createdAt: now,
       updatedAt: now,
     };
@@ -109,21 +118,24 @@ export class PaymentsService {
 
   authorizeIntent(tenantId: string, intentId: string): PaymentIntent {
     const intent = this.getRequiredIntent(tenantId, intentId);
-    intent.status = 'authorized';
+    const providerIntent = this.getRequiredAdapter(intent.provider).authorize(intent.reference);
+    intent.status = providerIntent.status;
     intent.updatedAt = new Date().toISOString();
     return intent;
   }
 
   captureIntent(tenantId: string, intentId: string): PaymentIntent {
     const intent = this.getRequiredIntent(tenantId, intentId);
-    intent.status = 'captured';
+    const providerIntent = this.getRequiredAdapter(intent.provider).capture(intent.reference);
+    intent.status = providerIntent.status;
     intent.updatedAt = new Date().toISOString();
     return intent;
   }
 
   refundIntent(tenantId: string, intentId: string): PaymentIntent {
     const intent = this.getRequiredIntent(tenantId, intentId);
-    intent.status = 'refunded';
+    const providerIntent = this.getRequiredAdapter(intent.provider).refund(intent.reference);
+    intent.status = providerIntent.status;
     intent.updatedAt = new Date().toISOString();
     return intent;
   }
@@ -132,24 +144,14 @@ export class PaymentsService {
     return PROVIDER_BY_TENANT[tenantId] ?? DEFAULT_PROVIDER_CONFIG;
   }
 
-  private isCurrencySupported(
-    tenantId: string,
-    provider: PaymentProvider,
-    currency: string,
-  ): boolean {
-    const providerConfig = this.getTenantConfig(tenantId);
+  private getRequiredAdapter(provider: PaymentProvider): PaymentProviderAdapter {
+    const adapter = this.adaptersByProvider.get(provider);
 
-    if (providerConfig.provider === provider) {
-      return providerConfig.supportedCurrencies.includes(currency);
+    if (!adapter) {
+      throw new Error(`Payment provider ${provider} is not registered`);
     }
 
-    const fallbackProviders: Record<PaymentProvider, string[]> = {
-      stripe: ['USD', 'EUR'],
-      paystack: ['NGN', 'USD'],
-      flutterwave: ['NGN', 'USD', 'EUR'],
-    };
-
-    return fallbackProviders[provider].includes(currency);
+    return adapter;
   }
 
   private getRequiredIntent(tenantId: string, intentId: string): PaymentIntent {

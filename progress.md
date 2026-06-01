@@ -30,6 +30,7 @@
 - Inventory slice is in place with tenant-aware stock tracking and reservations.
 - Discount engine slice is in place with tenant-aware discount evaluation.
 - Payment abstraction slice is in place with tenant-aware payment intents.
+- Payment provider adapter interface and mock adapter registry are in place.
 - Webhook platform slice is in place with tenant-aware registration and delivery fanout.
 - Admin API slice is in place with tenant, plugin, and event snapshots.
 - Storefront API slice is in place with tenant-aware public catalog endpoints.
@@ -57,7 +58,7 @@
 ## Next
 
 1. Add Redis-backed cart sessions and cart persistence.
-2. Add provider adapter interfaces for payments and email before wiring real vendors.
+2. Add email provider adapter interfaces before wiring real vendors.
 3. Add webhook delivery signatures, retries, and dead-letter persistence.
 4. Add checkout idempotency and durable order/payment persistence.
 

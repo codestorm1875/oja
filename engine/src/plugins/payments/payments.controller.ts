@@ -77,13 +77,15 @@ export class PaymentsController {
     }
 
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
-    const intent = this.paymentsService.createIntent({
-      tenantId: tenantContext.id,
-      amount,
-      currency,
-      orderId: body.orderId,
-      provider: body.provider,
-    });
+    const intent = this.runPaymentMutation(() =>
+      this.paymentsService.createIntent({
+        tenantId: tenantContext.id,
+        amount,
+        currency,
+        orderId: body.orderId,
+        provider: body.provider,
+      }),
+    );
 
     pluginContext.emitEvent(
       'payment.intent.created',
@@ -106,7 +108,9 @@ export class PaymentsController {
   authorizeIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
-    const intent = this.paymentsService.authorizeIntent(tenantContext.id, intentId);
+    const intent = this.runPaymentMutation(() =>
+      this.paymentsService.authorizeIntent(tenantContext.id, intentId),
+    );
 
     pluginContext.emitEvent(
       'payment.intent.authorized',
@@ -124,7 +128,9 @@ export class PaymentsController {
   captureIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
-    const intent = this.paymentsService.captureIntent(tenantContext.id, intentId);
+    const intent = this.runPaymentMutation(() =>
+      this.paymentsService.captureIntent(tenantContext.id, intentId),
+    );
 
     pluginContext.emitEvent(
       'payment.intent.captured',
@@ -142,7 +148,9 @@ export class PaymentsController {
   refundIntent(@Req() req: any, @Param('intentId') intentId: string): unknown {
     const tenantContext = req.tenantContext ?? { id: 'tenant_acme', slug: 'default' };
     const pluginContext = this.pluginContextService.createForTenant(tenantContext);
-    const intent = this.paymentsService.refundIntent(tenantContext.id, intentId);
+    const intent = this.runPaymentMutation(() =>
+      this.paymentsService.refundIntent(tenantContext.id, intentId),
+    );
 
     pluginContext.emitEvent(
       'payment.intent.refunded',
@@ -154,5 +162,15 @@ export class PaymentsController {
       tenant: pluginContext.tenant,
       intent,
     };
+  }
+
+  private runPaymentMutation<T>(operation: () => T): T {
+    try {
+      return operation();
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'payment mutation failed',
+      );
+    }
   }
 }

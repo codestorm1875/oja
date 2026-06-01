@@ -138,7 +138,8 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Tenant-aware fake payment intents.
 - [x] Provider currency checks.
 - [x] Intent authorize/capture/refund state changes.
-- [ ] Provider adapter interface.
+- [x] Provider adapter interface.
+- [x] Mock provider adapter registry.
 - [ ] Stripe adapter.
 - [ ] Paystack adapter.
 - [ ] Flutterwave adapter.
