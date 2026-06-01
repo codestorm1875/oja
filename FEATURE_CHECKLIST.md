@@ -161,8 +161,10 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] In-process event fanout.
 - [x] Simulated webhook delivery records.
 - [x] Test delivery endpoint behavior.
+- [x] Webhook signing secret generation.
+- [x] Signed webhook delivery metadata.
 - [ ] Real HTTP webhook delivery.
-- [ ] Webhook signing.
+- [x] Webhook signing.
 - [ ] Retry scheduling with exponential backoff.
 - [ ] Dead-letter queue.
 - [ ] Durable webhook registration persistence.

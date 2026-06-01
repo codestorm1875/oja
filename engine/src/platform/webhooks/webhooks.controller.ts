@@ -89,6 +89,7 @@ export class WebhooksController {
         url: webhook.url,
         eventTypes: webhook.eventTypes,
         failureMode: webhook.failureMode,
+        secretPrefix: webhook.secretPrefix,
       },
     });
 

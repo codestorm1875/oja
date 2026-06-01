@@ -32,6 +32,7 @@
 - Payment abstraction slice is in place with tenant-aware payment intents.
 - Payment provider adapter interface and mock adapter registry are in place.
 - Webhook platform slice is in place with tenant-aware registration and delivery fanout.
+- Webhook registrations now generate signing secrets and delivery records include HMAC signature metadata.
 - Notification platform slice is in place with a mock email provider adapter and test email endpoint.
 - Admin API slice is in place with tenant, plugin, and event snapshots.
 - Storefront API slice is in place with tenant-aware public catalog endpoints.
@@ -59,7 +60,7 @@
 ## Next
 
 1. Add Redis-backed cart sessions and cart persistence.
-2. Add webhook delivery signatures, retries, and dead-letter persistence.
+2. Add webhook retries, dead-letter persistence, and worker-backed delivery.
 3. Add checkout idempotency and durable order/payment persistence.
 4. Wire real payment and email providers.
 

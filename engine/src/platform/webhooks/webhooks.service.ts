@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { createHmac, randomBytes } from 'node:crypto';
 import { PluginEventBusService, type PluginEvent } from '../../services/event-bus.service.js';
 
 export type WebhookFailureMode = 'none' | 'always';
@@ -9,10 +10,19 @@ export type WebhookRegistration = {
   tenantId: string;
   url: string;
   eventTypes: string[];
+  secretPrefix: string;
   failureMode: WebhookFailureMode;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+type StoredWebhookRegistration = WebhookRegistration & {
+  secret: string;
+};
+
+export type RegisteredWebhook = WebhookRegistration & {
+  signingSecret: string;
 };
 
 export type WebhookDelivery = {
@@ -24,6 +34,9 @@ export type WebhookDelivery = {
   status: WebhookDeliveryStatus;
   attempts: number;
   httpStatus: number;
+  signature: string;
+  signatureTimestamp: string;
+  signatureHeader: string;
   nextRetryAt: string | null;
   deliveredAt: string | null;
   deadLetteredAt: string | null;
@@ -39,7 +52,7 @@ type RegisterWebhookInput = {
 
 @Injectable()
 export class WebhooksService {
-  private readonly webhooksByTenant = new Map<string, WebhookRegistration[]>();
+  private readonly webhooksByTenant = new Map<string, StoredWebhookRegistration[]>();
   private readonly deliveriesByTenant = new Map<string, WebhookDelivery[]>();
   private eventBusService: PluginEventBusService | null = null;
 
@@ -53,7 +66,9 @@ export class WebhooksService {
   }
 
   listWebhooks(tenantId: string): WebhookRegistration[] {
-    return [...(this.webhooksByTenant.get(tenantId) ?? [])];
+    return (this.webhooksByTenant.get(tenantId) ?? []).map((webhook) =>
+      this.toPublicWebhook(webhook),
+    );
   }
 
   listDeliveries(tenantId: string): WebhookDelivery[] {
@@ -64,17 +79,20 @@ export class WebhooksService {
     return this.listWebhooks(tenantId).find((webhook) => webhook.id === webhookId) ?? null;
   }
 
-  registerWebhook(input: RegisterWebhookInput): WebhookRegistration {
+  registerWebhook(input: RegisterWebhookInput): RegisteredWebhook {
     if (!input.url.trim()) {
       throw new Error('Webhook url is required');
     }
 
     const now = new Date().toISOString();
-    const webhook: WebhookRegistration = {
+    const secret = this.generateSecret();
+    const webhook: StoredWebhookRegistration = {
       id: `wh_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
       tenantId: input.tenantId,
       url: input.url,
       eventTypes: this.normalizeEventTypes(input.eventTypes),
+      secret,
+      secretPrefix: secret.slice(0, 12),
       failureMode: input.failureMode ?? 'none',
       enabled: true,
       createdAt: now,
@@ -82,7 +100,10 @@ export class WebhooksService {
     };
 
     this.storeWebhook(webhook);
-    return webhook;
+    return {
+      ...this.toPublicWebhook(webhook),
+      signingSecret: secret,
+    };
   }
 
   removeWebhook(tenantId: string, webhookId: string): boolean {
@@ -132,7 +153,7 @@ export class WebhooksService {
   }
 
   private createDelivery(
-    webhook: WebhookRegistration,
+    webhook: StoredWebhookRegistration,
     eventType: string,
     payload: Record<string, unknown>,
     forceDelivery = false,
@@ -140,6 +161,11 @@ export class WebhooksService {
     const now = new Date().toISOString();
     const shouldFail = webhook.failureMode === 'always' && !forceDelivery;
     const attempts = shouldFail ? 3 : 1;
+    const signatureTimestamp = String(Math.floor(Date.now() / 1000));
+    const signature = this.signPayload(webhook.secret, signatureTimestamp, {
+      eventType,
+      payload,
+    });
     const delivery: WebhookDelivery = {
       id: `whd_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
       tenantId: webhook.tenantId,
@@ -149,6 +175,9 @@ export class WebhooksService {
       status: shouldFail ? 'dead' : 'delivered',
       attempts,
       httpStatus: shouldFail ? 503 : 200,
+      signature,
+      signatureTimestamp,
+      signatureHeader: `t=${signatureTimestamp},v1=${signature}`,
       nextRetryAt: shouldFail ? new Date(Date.now() + 60_000).toISOString() : null,
       deliveredAt: shouldFail ? null : now,
       deadLetteredAt: shouldFail ? now : null,
@@ -159,8 +188,10 @@ export class WebhooksService {
     return delivery;
   }
 
-  private getRequiredWebhook(tenantId: string, webhookId: string): WebhookRegistration {
-    const webhook = this.getWebhook(tenantId, webhookId);
+  private getRequiredWebhook(tenantId: string, webhookId: string): StoredWebhookRegistration {
+    const webhook = (this.webhooksByTenant.get(tenantId) ?? []).find(
+      (entry) => entry.id === webhookId,
+    );
 
     if (!webhook) {
       throw new Error(`Webhook ${webhookId} not found`);
@@ -169,7 +200,7 @@ export class WebhooksService {
     return webhook;
   }
 
-  private matchesEventType(webhook: WebhookRegistration, eventType: string): boolean {
+  private matchesEventType(webhook: StoredWebhookRegistration, eventType: string): boolean {
     return webhook.eventTypes.includes('*') || webhook.eventTypes.includes(eventType);
   }
 
@@ -179,7 +210,7 @@ export class WebhooksService {
     return normalized.length > 0 ? normalized : ['*'];
   }
 
-  private storeWebhook(webhook: WebhookRegistration): void {
+  private storeWebhook(webhook: StoredWebhookRegistration): void {
     const webhooks = this.webhooksByTenant.get(webhook.tenantId) ?? [];
     this.webhooksByTenant.set(webhook.tenantId, [webhook, ...webhooks]);
   }
@@ -187,5 +218,24 @@ export class WebhooksService {
   private storeDelivery(delivery: WebhookDelivery): void {
     const deliveries = this.deliveriesByTenant.get(delivery.tenantId) ?? [];
     this.deliveriesByTenant.set(delivery.tenantId, [delivery, ...deliveries].slice(0, 100));
+  }
+
+  private toPublicWebhook(webhook: StoredWebhookRegistration): WebhookRegistration {
+    const { secret: _secret, ...publicWebhook } = webhook;
+    return publicWebhook;
+  }
+
+  private generateSecret(): string {
+    return `whsec_${randomBytes(24).toString('hex')}`;
+  }
+
+  private signPayload(
+    secret: string,
+    timestamp: string,
+    payload: Record<string, unknown>,
+  ): string {
+    return createHmac('sha256', secret)
+      .update(`${timestamp}.${JSON.stringify(payload)}`)
+      .digest('hex');
   }
 }
