@@ -203,6 +203,7 @@ This document tracks the planned feature set from `build.md` against the current
 - [x] Storefront product lookup.
 - [x] OpenAPI/Swagger setup.
 - [x] Swagger operation descriptions on API controllers.
+- [x] Swagger API-key authorization for protected engine endpoints.
 - [ ] Admin authentication and authorization.
 - [ ] Admin mutation endpoints.
 - [ ] Store management endpoints.

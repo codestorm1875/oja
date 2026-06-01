@@ -36,6 +36,7 @@
 - Webhook delivery retry scheduling and dead-letter scaffolding are in place with status-based delivery listing and manual failed-delivery retry.
 - Notification platform slice is in place with a mock email provider adapter and test email endpoint.
 - Swagger docs now include tags and operation summaries across API controllers.
+- Swagger can now test protected engine endpoints with `X-API-Key` authorization.
 - Admin API slice is in place with tenant, plugin, and event snapshots.
 - Storefront API slice is in place with tenant-aware public catalog endpoints.
 - Webhook fanout is attached to the in-process plugin event bus at engine bootstrap.

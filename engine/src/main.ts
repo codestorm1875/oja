@@ -20,10 +20,11 @@ function setupOpenAPI(app: Awaited<ReturnType<typeof NestFactory.create>>): void
         name: 'X-API-Key',
         in: 'header',
       },
-      'gateway-api-key',
+      'api-key',
     )
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  document.security = [{ 'api-key': [] }];
 
   SwaggerModule.setup('docs', app, document, {
     jsonDocumentUrl: 'openapi.json',

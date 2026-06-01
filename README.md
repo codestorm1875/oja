@@ -25,3 +25,5 @@ Use `.env.production.example` as the production template. Real `.env` and `.env.
 When `DATABASE_URL` is set, the gateway resolves API keys from PostgreSQL using hashed keys in the `api_keys` table. Without `DATABASE_URL`, it falls back to the local `gateway/tenants.json` fixture.
 
 When `DATABASE_URL` is set, the engine loads tenant/plugin configuration from PostgreSQL during bootstrap. Without `DATABASE_URL`, it falls back to the local `engine/tenants.json` fixture.
+
+Swagger is available at `/docs`. Use the Authorize button with `X-API-Key` values such as `test-key-acme` for local testing.
