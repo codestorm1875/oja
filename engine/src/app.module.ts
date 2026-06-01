@@ -26,6 +26,8 @@ import { StorefrontController } from './platform/storefront/storefront.controlle
 import { StorefrontService } from './platform/storefront/storefront.service.js';
 import { WebhooksController } from './platform/webhooks/webhooks.controller.js';
 import { WebhooksService } from './platform/webhooks/webhooks.service.js';
+import { NotificationsController } from './platform/notifications/notifications.controller.js';
+import { NotificationsService } from './platform/notifications/notifications.service.js';
 
 @Module({
   providers: [
@@ -45,6 +47,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     AdminService,
     StorefrontService,
     WebhooksService,
+    NotificationsService,
   ],
   controllers: [
     HealthController,
@@ -58,6 +61,7 @@ import { WebhooksService } from './platform/webhooks/webhooks.service.js';
     AdminController,
     StorefrontController,
     WebhooksController,
+    NotificationsController,
   ],
 })
 export class AppModule implements NestModule {

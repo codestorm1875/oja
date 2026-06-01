@@ -172,8 +172,10 @@ This document tracks the planned feature set from `build.md` against the current
 
 ## Email And Notifications
 
-- [ ] Notification module or plugin.
-- [ ] Email provider adapter interface.
+- [x] Notification module or plugin.
+- [x] Email provider adapter interface.
+- [x] Mock email provider adapter.
+- [x] Test email endpoint.
 - [ ] Primary email provider adapter.
 - [ ] SMTP fallback adapter.
 - [ ] Transactional email templates.
